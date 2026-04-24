@@ -1,4 +1,4 @@
-# 🚀 Trading Watchlist Simulation App
+# 🚀 MarketPulse
 
 A high-performance Flutter application that demonstrates a scalable **BLoC-based architecture** for managing a stock watchlist with real-time updates, reorder functionality, and advanced chart visualization.
 
@@ -130,10 +130,33 @@ git clone https://github.com/rahul-cse-25/trading_reorder_simulation.git
 flutter pub get
 ```
 
-3. **Run the app**:
+3. **Optimized Build (Recommended)**:
+To generate a single, highly-optimized APK with the smallest possible size:
 ```bash
-flutter run
+# Step 1: Clean project
+flutter clean
+flutter pub get
+
+# Step 2: Build optimized APK
+flutter build apk \
+  --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info \
+  --tree-shake-icons
 ```
+
+### 🧠 Build Flags Explained:
+*   `--release`: Builds optimized production APK (removes debug code).
+*   `--obfuscate`: Renames classes/functions to protect code and reduce size.
+*   `--split-debug-info`: Moves debug symbols outside the APK to save space.
+*   `--tree-shake-icons`: Removes all unused icons from font files (saves ~300KB).
+
+---
+
+## 📲 Quick Install
+
+For immediate testing, you can find the pre-built release APK in the root directory:
+👉 **[MarketPulse_v1.0.apk](MarketPulse_v1.0.apk)**
 
 ---
 

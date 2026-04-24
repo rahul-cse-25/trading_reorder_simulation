@@ -41,7 +41,7 @@ class WatchlistScreen extends StatelessWidget {
                 elevation: 0,
                 surfaceTintColor: Colors.transparent,
                 title: const AppText(
-                  'Dashboard',
+                  'MarketPulse',
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,

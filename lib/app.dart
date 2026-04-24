@@ -31,7 +31,7 @@ class TradingApp extends StatelessWidget {
           ),
         ],
         child: MaterialApp(
-          title: 'Trading Simulation',
+          title: 'MarketPulse',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             brightness: Brightness.dark,
