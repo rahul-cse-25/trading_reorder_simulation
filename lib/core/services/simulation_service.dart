@@ -11,53 +11,54 @@ class MarketUpdate {
 }
 
 class SimulationService {
-  final _controller = StreamController<MarketUpdate>.broadcast();
+  final _controller = StreamController<List<MarketUpdate>>.broadcast();
   Timer? _timer;
   final _random = Random();
 
-  Stream<MarketUpdate> get stream => _controller.stream;
+  Stream<List<MarketUpdate>> get stream => _controller.stream;
 
   void start({
     required List<Stock> stocks,
     required List<MarketIndex> indices,
   }) {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      // Perform at least 3 updates per tick
-      for (int i = 0; i < 3; i++) {
-        // 70% chance to update a stock, 30% for an index (since there are more stocks)
+    _timer = Timer.periodic(const Duration(milliseconds: 1000), (_) {
+      final List<MarketUpdate> updates = [];
+
+      // Perform 2 updates per tick (Optimized for performance)
+      for (int i = 0; i < 2; i++) {
         if (_random.nextDouble() > 0.3 && stocks.isNotEmpty) {
-          _updateStock(stocks);
+          updates.add(_generateStockUpdate(stocks));
         } else if (indices.isNotEmpty) {
-          _updateIndex(indices);
+          updates.add(_generateIndexUpdate(indices));
         }
+      }
+
+      if (updates.isNotEmpty) {
+        _controller.add(updates);
       }
     });
   }
 
-  void _updateStock(List<Stock> stocks) {
+  MarketUpdate _generateStockUpdate(List<Stock> stocks) {
     final stock = stocks[_random.nextInt(stocks.length)];
     final changePercent = (_random.nextDouble() - 0.5) * 0.005; // +/- 0.25%
     final newPrice = stock.price * (1 + changePercent);
 
-    _controller.add(
-      MarketUpdate(
-        symbol: stock.symbol,
-        newPrice: double.parse(newPrice.toStringAsFixed(2)),
-      ),
+    return MarketUpdate(
+      symbol: stock.symbol,
+      newPrice: double.parse(newPrice.toStringAsFixed(2)),
     );
   }
 
-  void _updateIndex(List<MarketIndex> indices) {
+  MarketUpdate _generateIndexUpdate(List<MarketIndex> indices) {
     final index = indices[_random.nextInt(indices.length)];
     final changePercent = (_random.nextDouble() - 0.5) * 0.002; // +/- 0.1%
     final newPrice = index.price * (1 + changePercent);
 
-    _controller.add(
-      MarketUpdate(
-        symbol: index.symbol,
-        newPrice: double.parse(newPrice.toStringAsFixed(2)),
-      ),
+    return MarketUpdate(
+      symbol: index.symbol,
+      newPrice: double.parse(newPrice.toStringAsFixed(2)),
     );
   }
 

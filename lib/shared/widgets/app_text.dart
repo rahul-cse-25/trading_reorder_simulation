@@ -7,6 +7,8 @@ class AppText extends StatelessWidget {
   final Color? color;
   final TextAlign? textAlign;
   final double? letterSpacing;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const AppText(
     this.text, {
@@ -16,6 +18,8 @@ class AppText extends StatelessWidget {
     this.color,
     this.textAlign,
     this.letterSpacing,
+    this.maxLines,
+    this.overflow,
   });
 
   @override
@@ -23,11 +27,12 @@ class AppText extends StatelessWidget {
     return Text(
       text,
       textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
       style: TextStyle(
         fontSize: fontSize,
         fontWeight: fontWeight,
         color: color,
-        fontFamily: 'RobotoCondensed',
         letterSpacing: letterSpacing,
       ),
     );

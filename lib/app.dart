@@ -37,6 +37,7 @@ class TradingApp extends StatelessWidget {
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: const Color(0xFF121212),
+            fontFamily: 'RobotoCondensed',
           ),
           home: const WatchlistScreen(),
         ),

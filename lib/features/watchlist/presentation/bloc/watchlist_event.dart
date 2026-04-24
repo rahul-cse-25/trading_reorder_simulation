@@ -1,3 +1,5 @@
+import '../../../../core/services/simulation_service.dart';
+
 abstract class WatchlistEvent {}
 
 class LoadStocks extends WatchlistEvent {}
@@ -14,4 +16,10 @@ class UpdateStockPrice extends WatchlistEvent {
   final double newPrice;
 
   UpdateStockPrice(this.symbol, this.newPrice);
+}
+
+class UpdateMarketBatch extends WatchlistEvent {
+  final List<MarketUpdate> updates;
+
+  UpdateMarketBatch(this.updates);
 }

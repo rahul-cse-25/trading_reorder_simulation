@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../../../../core/utils/price_formatter.dart';
+import 'app_text.dart';
 
 class PriceText extends StatelessWidget {
   final double price;
@@ -17,15 +18,11 @@ class PriceText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatter = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
-
-    return Text(
-      formatter.format(price),
-      style: TextStyle(
-        fontSize: fontSize,
-        fontWeight: fontWeight ?? FontWeight.bold,
-        color: color,
-      ),
+    return AppText(
+      AppPriceFormatter.format(price),
+      fontSize: fontSize,
+      fontWeight: fontWeight ?? FontWeight.bold,
+      color: color,
     );
   }
 }

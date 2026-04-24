@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:imp_trading_chart/imp_trading_chart.dart';
 
-class Stock {
+class Stock extends Equatable {
   final String symbol;
   final String name;
   final double price;
@@ -8,7 +9,7 @@ class Stock {
   final double percentChange;
   final List<Candle> candles;
 
-  Stock({
+  const Stock({
     required this.symbol,
     required this.name,
     required this.price,
@@ -32,4 +33,14 @@ class Stock {
       candles: candles ?? this.candles,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    symbol,
+    name,
+    price,
+    change,
+    percentChange,
+    candles,
+  ];
 }

@@ -30,7 +30,7 @@ class MarketIndexModel {
       percentChange: json['percentChange'].toDouble(),
       candles: [],
       // Placeholder or map from JSON if available
-      bgColor: json['bgColor'],
+      bgColor: Color(json['bgColor']),
     );
   }
 }
