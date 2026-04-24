@@ -65,7 +65,7 @@ class MarketIndexBar extends StatelessWidget {
                       border: Border.all(color: Colors.white10, width: 0.5),
                       gradient: LinearGradient(
                         colors: [
-                          marketIndex.bgColor.withOpacity(0.15),
+                          marketIndex.bgColor.withValues(alpha: 0.15),
                           Colors.transparent,
                         ],
                         begin: Alignment.topLeft,
