@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/widgets/app_text.dart';
+import '../../../../core/utils/money_utils.dart';
+import '../../../trading/presentation/bloc/wallet_cubit.dart';
 import '../bloc/watchlist_bloc.dart';
 import '../bloc/watchlist_state.dart';
 import '../widgets/market_index_bar.dart';
@@ -40,11 +42,40 @@ class WatchlistScreen extends StatelessWidget {
                 backgroundColor: const Color(0xFF121212),
                 elevation: 0,
                 surfaceTintColor: Colors.transparent,
-                title: const AppText(
-                  'MarketPulse',
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const AppText(
+                      'MarketPulse',
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    BlocBuilder<WalletCubit, int>(
+                      builder: (context, balance) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.account_balance_wallet_outlined, size: 14, color: Colors.blueAccent),
+                              const SizedBox(width: 6),
+                              AppText(
+                                MoneyUtils.format(balance),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 actions: [
                   IconButton(

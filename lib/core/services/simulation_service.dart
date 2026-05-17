@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:math';
+
+import '../../features/trading/domain/entities/trade.dart';
 import '../../features/watchlist/domain/entities/market_index.dart';
 import '../../features/watchlist/domain/entities/stock.dart';
 
@@ -14,8 +16,18 @@ class SimulationService {
   final _controller = StreamController<List<MarketUpdate>>.broadcast();
   Timer? _timer;
   final _random = Random();
+  final Map<String, double> _shocks = {}; // symbol -> price_shock_multiplier
 
   Stream<List<MarketUpdate>> get stream => _controller.stream;
+
+  void applyMarketImpact(String symbol, int quantity, TradeType type) {
+    // Large trades have more impact (Logarithmic scale for realism)
+    // Strength: Up to 1.5% shock for huge orders
+    final impactStrength = (log(quantity + 1) / log(10000)) * 0.015;
+    final direction = type == TradeType.buy ? 1.0 : -1.0;
+
+    _shocks[symbol] = (_shocks[symbol] ?? 0.0) + (direction * impactStrength);
+  }
 
   void start({
     required List<Stock> stocks,
@@ -25,8 +37,8 @@ class SimulationService {
     _timer = Timer.periodic(const Duration(milliseconds: 1000), (_) {
       final List<MarketUpdate> updates = [];
 
-      // Perform 2 updates per tick (Optimized for performance)
-      for (int i = 0; i < 2; i++) {
+      // Perform 3 updates per tick for higher activity
+      for (int i = 0; i < 3; i++) {
         if (_random.nextDouble() > 0.3 && stocks.isNotEmpty) {
           updates.add(_generateStockUpdate(stocks));
         } else if (indices.isNotEmpty) {
@@ -42,8 +54,16 @@ class SimulationService {
 
   MarketUpdate _generateStockUpdate(List<Stock> stocks) {
     final stock = stocks[_random.nextInt(stocks.length)];
-    final changePercent = (_random.nextDouble() - 0.5) * 0.005; // +/- 0.25%
-    final newPrice = stock.price * (1 + changePercent);
+
+    // Natural Drift (Slight upward bias for simulation feel)
+    final changePercent = (_random.nextDouble() - 0.48) * 0.006;
+
+    // Apply and decay shocks over time (Mean Reversion / Dissipation)
+    final shock = _shocks[stock.symbol] ?? 0.0;
+    _shocks[stock.symbol] = shock * 0.90; // 10% dissipation per tick
+
+    final totalChange = changePercent + shock;
+    final newPrice = stock.price * (1 + totalChange);
 
     return MarketUpdate(
       symbol: stock.symbol,
