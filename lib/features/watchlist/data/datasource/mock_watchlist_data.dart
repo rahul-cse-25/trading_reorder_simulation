@@ -130,6 +130,10 @@ class MockWatchlistData {
   List<Candle> _generateSmartCandles(String symbol, double basePrice, {required int count}) {
     final List<Candle> candles = [];
     final int seed = symbol.hashCode.abs();
+    final double stockFactor = (seed % 100) / 100.0;
+    
+    // Matching volatility multiplier
+    final double volatilityMultiplier = 0.8 + (stockFactor * 1.7);
     
     // Generate historical candles leading up to market open (33300)
     // 60 seconds (1 minute) interval per candle
@@ -142,17 +146,17 @@ class MockWatchlistData {
       
       // Calculate a highly deterministic and beautiful intraday trend using sine waves
       final double dayFraction = (time - 33300) / 22500.0;
-      final double wave1 = 0.012 * sin(dayFraction * pi * 2 + (seed % 100 / 100.0 * pi));
-      final double wave2 = 0.005 * cos(dayFraction * pi * 4 - (seed % 100 / 100.0 * pi / 2));
+      final double wave1 = 0.018 * sin(dayFraction * pi * 2 + (stockFactor * pi)) * volatilityMultiplier;
+      final double wave2 = 0.008 * cos(dayFraction * pi * 4 - (stockFactor * pi / 2)) * volatilityMultiplier;
       
       final random = Random(seed ^ time);
-      final double noise = (random.nextDouble() - 0.48) * 0.002;
+      final double noise = (random.nextDouble() - 0.48) * 0.004 * volatilityMultiplier;
       
       final double close = basePrice * (1.0 + wave1 + wave2 + noise);
       
       // Keep high/low realistic and bound
-      final double high = (open > close ? open : close) + (random.nextDouble() * 0.0008 * basePrice);
-      final double low = (open < close ? open : close) - (random.nextDouble() * 0.0008 * basePrice);
+      final double high = (open > close ? open : close) + (random.nextDouble() * 0.0008 * basePrice * volatilityMultiplier);
+      final double low = (open < close ? open : close) - (random.nextDouble() * 0.0008 * basePrice * volatilityMultiplier);
       final double volume = 10000 + random.nextInt(90000).toDouble();
       
       candles.add(

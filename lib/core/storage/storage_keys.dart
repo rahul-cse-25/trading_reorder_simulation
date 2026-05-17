@@ -13,6 +13,9 @@ abstract class StorageKeys {
   /// String (JSON): List of Holding models
   static const String holdings = 'holdings';
 
+  /// String (JSON): List of CustomWatchlist models
+  static const String watchlists = 'watchlists_data';
+
   /// String: Schema version for migrations
   static const String storageVersion = 'storage_version';
 }

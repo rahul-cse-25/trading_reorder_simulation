@@ -50,12 +50,14 @@ Future<void> initDI() async {
   sl.registerLazySingleton(() => ExecuteTradeUseCase(sl(), sl(), sl()));
 
   // --- BLoCs ---
-  // Factory used because BLoCs have state and should be created per usage if needed,
-  // though for global Blocs, singleton is also common. Here we follow Factory pattern.
-  sl.registerFactory(() => WatchlistBloc(sl(), sl()));
-  sl.registerFactory(() => TradeBloc(executeTrade: sl(), repository: sl()));
-  sl.registerFactory(() => WalletCubit(repository: sl(), orchestrator: sl()));
-  sl.registerFactory(() => PortfolioBloc(repository: sl(), watchlistBloc: sl(), orchestrator: sl()));
+  sl.registerLazySingleton(() => WatchlistBloc(sl(), sl()));
+  sl.registerLazySingleton(() => TradeBloc(executeTrade: sl(), repository: sl()));
+  sl.registerLazySingleton(() => WalletCubit(repository: sl(), orchestrator: sl()));
+  sl.registerLazySingleton(() => PortfolioBloc(
+        repository: sl(),
+        orchestrator: sl(),
+        simulationService: sl(),
+      ));
 
   // Note: Trade and Portfolio dependencies will be added as we implement those features.
 }
