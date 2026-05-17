@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/simulation_service.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../trading/presentation/bloc/wallet_cubit.dart';
@@ -45,11 +47,28 @@ class WatchlistScreen extends StatelessWidget {
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const AppText(
-                      'MarketPulse',
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AppText(
+                          'MarketPulse',
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        StreamBuilder<List<MarketUpdate>>(
+                          stream: sl<SimulationService>().stream,
+                          builder: (context, snapshot) {
+                            return AppText(
+                              sl<SimulationService>().formattedMarketTime,
+                              fontSize: 12,
+                              color: Colors.white38,
+                              fontWeight: FontWeight.w600,
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     BlocBuilder<WalletCubit, int>(
                       builder: (context, balance) {

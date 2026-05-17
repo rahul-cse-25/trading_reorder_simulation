@@ -86,48 +86,39 @@ class WatchlistBloc extends Bloc<WatchlistEvent, WatchlistState> {
   }
 
   Stock _processStockUpdate(Stock stock, MarketUpdate update) {
-    final newPrice = update.newPrice;
-    final change = newPrice - stock.price;
-    final percentChange = (change / stock.price) * 100;
-
-    final candles = _updateCandles(stock.candles, newPrice);
+    final candles = _updateCandles(stock.candles, update.newPrice, update.marketTimeSeconds);
 
     return stock.copyWith(
-      price: newPrice,
-      change: change,
-      percentChange: percentChange,
+      price: update.newPrice,
+      change: update.change,
+      percentChange: update.percentChange,
       candles: candles,
     );
   }
 
   MarketIndex _processIndexUpdate(MarketIndex index, MarketUpdate update) {
-    final newPrice = update.newPrice;
-    final change = newPrice - index.price;
-    final percentChange = (change / index.price) * 100;
-
-    final candles = _updateCandles(index.candles, newPrice);
+    final candles = _updateCandles(index.candles, update.newPrice, update.marketTimeSeconds);
 
     return index.copyWith(
-      price: newPrice,
-      change: change,
-      percentChange: percentChange,
+      price: update.newPrice,
+      change: update.change,
+      percentChange: update.percentChange,
       candles: candles,
     );
   }
 
-  List<Candle> _updateCandles(List<Candle> currentCandles, double newPrice) {
+  List<Candle> _updateCandles(List<Candle> currentCandles, double newPrice, int marketTimeSeconds) {
     // Cloning the list to maintain immutability and ensure Bloc state transitions are pure
     final candles = List<Candle>.from(currentCandles);
     if (candles.isEmpty) return candles;
 
     final lastCandle = candles.last;
-    final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    if (nowSeconds - lastCandle.time >= 60) {
+    if (marketTimeSeconds - lastCandle.time >= 60) {
       // Start a new candle every 60 seconds
       candles.add(
         Candle(
-          time: nowSeconds,
+          time: marketTimeSeconds,
           open: lastCandle.close,
           high: newPrice > lastCandle.close ? newPrice : lastCandle.close,
           low: newPrice < lastCandle.close ? newPrice : lastCandle.close,
@@ -155,7 +146,14 @@ class WatchlistBloc extends Bloc<WatchlistEvent, WatchlistState> {
     // Kept for backward compatibility or individual updates
     add(
       UpdateMarketBatch([
-        MarketUpdate(symbol: event.symbol, newPrice: event.newPrice),
+        MarketUpdate(
+          symbol: event.symbol,
+          newPrice: event.newPrice,
+          change: 0.0,
+          percentChange: 0.0,
+          marketTimeSeconds: 33300,
+          day: 1,
+        ),
       ]),
     );
   }

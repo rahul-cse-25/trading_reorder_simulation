@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/simulation_service.dart';
 import '../../../../core/formatters/integer_input_formatter.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/widgets/app_text.dart';
@@ -97,6 +98,30 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
           AppText(stock.name, color: Colors.white54, fontSize: 12),
         ],
       ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0, top: 12.0, bottom: 12.0),
+          child: StreamBuilder<List<MarketUpdate>>(
+            stream: sl<SimulationService>().stream,
+            builder: (context, snapshot) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: AppText(
+                  sl<SimulationService>().formattedMarketTime,
+                  fontSize: 11,
+                  color: Colors.white54,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

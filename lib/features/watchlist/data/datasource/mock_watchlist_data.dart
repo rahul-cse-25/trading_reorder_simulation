@@ -17,7 +17,7 @@ class MockWatchlistData {
         percentChange: 0.70,
         bgColor: const Color(0xFF1A237E),
         // NSE Indigo
-        candles: _generateSmartCandles(22350.85, count: 10),
+        candles: _generateSmartCandles('NIFTY 50', 22350.85, count: 10),
       ),
       MarketIndexModel(
         symbol: 'SENSEX',
@@ -27,7 +27,7 @@ class MockWatchlistData {
         percentChange: 0.66,
         bgColor: const Color(0xFF0D47A1),
         // BSE Blue
-        candles: _generateSmartCandles(73651.35, count: 10),
+        candles: _generateSmartCandles('SENSEX', 73651.35, count: 10),
       ),
       MarketIndexModel(
         symbol: 'NIFTY BANK',
@@ -37,7 +37,7 @@ class MockWatchlistData {
         percentChange: -0.25,
         bgColor: const Color(0xFF4A148C),
         // Banking Purple
-        candles: _generateSmartCandles(47582.10, count: 10),
+        candles: _generateSmartCandles('NIFTY BANK', 47582.10, count: 10),
       ),
     ];
   }
@@ -50,7 +50,7 @@ class MockWatchlistData {
         price: 2950.45,
         change: 12.50,
         percentChange: 0.42,
-        candles: _generateSmartCandles(2950.45, count: 5),
+        candles: _generateSmartCandles('RELIANCE', 2950.45, count: 5),
       ),
       StockModel(
         symbol: 'TCS',
@@ -58,7 +58,7 @@ class MockWatchlistData {
         price: 3845.00,
         change: -45.20,
         percentChange: -1.16,
-        candles: _generateSmartCandles(3845.00, count: 5),
+        candles: _generateSmartCandles('TCS', 3845.00, count: 5),
       ),
       StockModel(
         symbol: 'HDFCBANK',
@@ -66,7 +66,7 @@ class MockWatchlistData {
         price: 1520.30,
         change: 5.15,
         percentChange: 0.34,
-        candles: _generateSmartCandles(1520.30, count: 5),
+        candles: _generateSmartCandles('HDFCBANK', 1520.30, count: 5),
       ),
       StockModel(
         symbol: 'INFY',
@@ -74,7 +74,7 @@ class MockWatchlistData {
         price: 1475.60,
         change: -8.40,
         percentChange: -0.57,
-        candles: _generateSmartCandles(1475.60, count: 5),
+        candles: _generateSmartCandles('INFY', 1475.60, count: 5),
       ),
       StockModel(
         symbol: 'ICICIBANK',
@@ -82,7 +82,7 @@ class MockWatchlistData {
         price: 1085.25,
         change: 14.80,
         percentChange: 1.38,
-        candles: _generateSmartCandles(1085.25, count: 5),
+        candles: _generateSmartCandles('ICICIBANK', 1085.25, count: 5),
       ),
       StockModel(
         symbol: 'HINDUNILVR',
@@ -90,7 +90,7 @@ class MockWatchlistData {
         price: 2520.75,
         change: -18.40,
         percentChange: -0.72,
-        candles: _generateSmartCandles(2520.75, count: 5),
+        candles: _generateSmartCandles('HINDUNILVR', 2520.75, count: 5),
       ),
       StockModel(
         symbol: 'SBIN',
@@ -98,7 +98,7 @@ class MockWatchlistData {
         price: 820.10,
         change: 9.25,
         percentChange: 1.14,
-        candles: _generateSmartCandles(820.10, count: 5),
+        candles: _generateSmartCandles('SBIN', 820.10, count: 5),
       ),
       StockModel(
         symbol: 'BHARTIARTL',
@@ -106,7 +106,7 @@ class MockWatchlistData {
         price: 1345.60,
         change: 22.30,
         percentChange: 1.68,
-        candles: _generateSmartCandles(1345.60, count: 5),
+        candles: _generateSmartCandles('BHARTIARTL', 1345.60, count: 5),
       ),
       StockModel(
         symbol: 'LT',
@@ -114,7 +114,7 @@ class MockWatchlistData {
         price: 3620.00,
         change: -30.00,
         percentChange: -0.82,
-        candles: _generateSmartCandles(3620.00, count: 5),
+        candles: _generateSmartCandles('LT', 3620.00, count: 5),
       ),
       StockModel(
         symbol: 'ASIANPAINT',
@@ -122,45 +122,42 @@ class MockWatchlistData {
         price: 3105.40,
         change: 6.20,
         percentChange: 0.20,
-        candles: _generateSmartCandles(3105.40, count: 5),
+        candles: _generateSmartCandles('ASIANPAINT', 3105.40, count: 5),
       ),
     ];
   }
 
-  List<Candle> _generateSmartCandles(double basePrice, {required int count}) {
-    final random = Random();
+  List<Candle> _generateSmartCandles(String symbol, double basePrice, {required int count}) {
     final List<Candle> candles = [];
-
-    // Start time: between 2 and 3 days ago
-    final daysAgo = 2 + random.nextDouble(); // 2.0 to 3.0 days
-    DateTime currentTime = DateTime.now().subtract(
-      Duration(hours: (daysAgo * 24).toInt()),
-    );
-
-    // Interval for candles to reach roughly now
-    final intervalHours = (daysAgo * 24) / count;
-
+    final int seed = symbol.hashCode.abs();
+    
+    // Generate historical candles leading up to market open (33300)
+    // 60 seconds (1 minute) interval per candle
+    int startTime = 33300 - (count * 60);
     double lastClose = basePrice;
-
+    
     for (int i = 0; i < count; i++) {
-      final open = lastClose;
-      // Random walk with 2% max volatility per candle
-      final volatility = open * 0.02;
-      final close =
-          open +
-          (random.nextDouble() - 0.45) * volatility; // Slight upward bias
-      final high =
-          (open > close ? open : close) +
-          random.nextDouble() * (volatility * 0.5);
-      final low =
-          (open < close ? open : close) -
-          random.nextDouble() * (volatility * 0.5);
-
-      final volume = 100000 + random.nextDouble() * 900000;
-
+      final int time = startTime + (i * 60);
+      final double open = lastClose;
+      
+      // Calculate a highly deterministic and beautiful intraday trend using sine waves
+      final double dayFraction = (time - 33300) / 22500.0;
+      final double wave1 = 0.012 * sin(dayFraction * pi * 2 + (seed % 100 / 100.0 * pi));
+      final double wave2 = 0.005 * cos(dayFraction * pi * 4 - (seed % 100 / 100.0 * pi / 2));
+      
+      final random = Random(seed ^ time);
+      final double noise = (random.nextDouble() - 0.48) * 0.002;
+      
+      final double close = basePrice * (1.0 + wave1 + wave2 + noise);
+      
+      // Keep high/low realistic and bound
+      final double high = (open > close ? open : close) + (random.nextDouble() * 0.0008 * basePrice);
+      final double low = (open < close ? open : close) - (random.nextDouble() * 0.0008 * basePrice);
+      final double volume = 10000 + random.nextInt(90000).toDouble();
+      
       candles.add(
         Candle(
-          time: currentTime.millisecondsSinceEpoch ~/ 1000,
+          time: time,
           open: open,
           high: high,
           low: low,
@@ -168,11 +165,9 @@ class MockWatchlistData {
           volume: volume,
         ),
       );
-
+      
       lastClose = close;
-      currentTime = currentTime.add(Duration(hours: intervalHours.toInt()));
     }
-
     return candles;
   }
 }

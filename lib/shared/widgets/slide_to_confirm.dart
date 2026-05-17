@@ -34,6 +34,18 @@ class _SlideToConfirmState extends State<SlideToConfirm> with SingleTickerProvid
   }
 
   @override
+  void didUpdateWidget(SlideToConfirm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset the slider if it gets disabled (e.g., when quantity clears after a successful trade)
+    if (oldWidget.isEnabled && !widget.isEnabled) {
+      setState(() {
+        _position = 0.0;
+        _isConfirmed = false;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
