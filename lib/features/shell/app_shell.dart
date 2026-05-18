@@ -5,6 +5,7 @@ import '../watchlist/presentation/screens/watchlist_screen.dart';
 import '../portfolio/presentation/screens/portfolio_screen.dart';
 import '../portfolio/presentation/bloc/portfolio_bloc.dart';
 import '../portfolio/presentation/bloc/portfolio_event.dart';
+import '../trading/presentation/screens/transaction_history_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -19,6 +20,7 @@ class _AppShellState extends State<AppShell> {
   final List<Widget> _screens = [
     const WatchlistScreen(),
     const PortfolioScreen(),
+    const TransactionHistoryScreen(),
   ];
 
   void _onTabTapped(int index) {
@@ -68,6 +70,11 @@ class _AppShellState extends State<AppShell> {
               icon: Icon(Icons.pie_chart_outline_rounded),
               activeIcon: Icon(Icons.pie_chart_rounded, color: Colors.blueAccent),
               label: 'Portfolio',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined),
+              activeIcon: Icon(Icons.receipt_long_rounded, color: Colors.blueAccent),
+              label: 'Orders',
             ),
           ],
         ),
