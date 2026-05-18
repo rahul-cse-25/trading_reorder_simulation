@@ -25,7 +25,6 @@ class WatchlistScreen extends StatelessWidget {
     final symbols = sl<WatchlistRepository>().getAllAvailableSymbols();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       body: BlocBuilder<WatchlistBloc, WatchlistState>(
         buildWhen: (previous, current) {
           // Performance Guard: Only rebuild scaffold structure if loading state changes
@@ -45,9 +44,6 @@ class WatchlistScreen extends StatelessWidget {
             slivers: [
               SliverAppBar(
                 pinned: true,
-                backgroundColor: const Color(0xFF121212),
-                elevation: 0,
-                surfaceTintColor: Colors.transparent,
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

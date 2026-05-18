@@ -1,9 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show HapticFeedback;
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/formatters/capitalize_name_formatter.dart';
 import '../../../../core/utils/navigator_ex.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/custom_watchlist.dart';
@@ -22,186 +23,146 @@ class ReorderWatchlistScreen extends StatefulWidget {
 }
 
 class _ReorderWatchlistScreenState extends State<ReorderWatchlistScreen> {
-  bool _isWatchlistSelectorExpanded = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       body: BlocBuilder<WatchlistManagerCubit, WatchlistManagerState>(
         builder: (context, managerState) {
           if (managerState.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
           }
-
           final selectedWatchlist = managerState.selectedWatchlist;
           if (selectedWatchlist == null) {
             return const Center(
               child: AppText('No watchlists found', color: Colors.white54),
             );
           }
-
           return CustomScrollView(
             slivers: [
-              // ── Zone 1: AppBar ──
               SliverAppBar(
                 pinned: true,
-                backgroundColor: const Color(0xFF121212),
-                elevation: 0,
-                surfaceTintColor: Colors.transparent,
-                title: const AppText(
-                  'Manage Watchlists',
-                  fontWeight: FontWeight.bold,
-                ),
-                leadingWidth: 32,
                 leading: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white70,
+                    size: 22,
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.add, color: Colors.blueAccent),
-                    tooltip: 'Create Watchlist',
-                    onPressed: () => _showCreateWatchlistDialog(context),
-                  ),
-                  const SizedBox(width: 4),
-                ],
-              ),
-
-              // ── Zone 2: Watchlist Selector ──
-              SliverToBoxAdapter(
-                child: _WatchlistSelector(
-                  watchlists: managerState.watchlists,
-                  selectedId: managerState.selectedWatchlistId,
-                  isExpanded: _isWatchlistSelectorExpanded,
-                  onToggleExpand: () {
-                    setState(() {
-                      _isWatchlistSelectorExpanded =
-                          !_isWatchlistSelectorExpanded;
-                    });
-                  },
-                  onSelect: (id) {
-                    context.read<WatchlistManagerCubit>().selectWatchlist(id);
-                    setState(() => _isWatchlistSelectorExpanded = false);
-                  },
-                  onRename: (id) => _showRenameDialog(context, id),
-                  onDelete: (id) => _confirmDeleteWatchlist(context, id),
+                title: const AppText(
+                  'Watchlists',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              // ── Watchlist Manager Panel ──
+              SliverToBoxAdapter(
+                child: _WatchlistManagerPanel(
+                  watchlists: managerState.watchlists,
+                  selectedId: managerState.selectedWatchlistId,
+                  onSelect: (id) =>
+                      context.read<WatchlistManagerCubit>().selectWatchlist(id),
+                  onRename: (id) => _showRenameDialog(context, id),
+                  onDelete: (id) => _confirmDeleteWatchlist(context, id),
+                  onCreateNew: () => _showCreateWatchlistDialog(context),
+                ),
+              ),
 
-              // ── Zone 3: Stock List ──
+              const SliverToBoxAdapter(child: SizedBox(height: 4)),
+
               if (selectedWatchlist.symbols.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.playlist_add,
-                          size: 64,
-                          color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                        const SizedBox(height: 16),
-                        const AppText(
-                          'No stocks in this watchlist',
-                          color: Colors.white38,
-                        ),
-                        const SizedBox(height: 8),
-                        const AppText(
-                          'Tap + below to add stocks',
-                          color: Colors.white24,
-                          fontSize: 12,
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: _buildEmptyCTA(),
                 )
               else
                 _StockReorderableList(
                   symbols: selectedWatchlist.symbols,
                   watchlistId: selectedWatchlist.id,
                 ),
-
               const SliverToBoxAdapter(
-                child: SafeArea(top: false, child: SizedBox(height: 80)),
+                child: SafeArea(top: false, child: SizedBox(height: 90)),
               ),
             ],
           );
         },
       ),
-      // ── Zone 4: Add Stock FAB ──
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showStockPicker(context),
-        backgroundColor: Colors.blueAccent,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const AppText(
-          'Add Stock',
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+      floatingActionButton: _buildFAB(context),
+    );
+  }
+
+  Widget _buildFAB(BuildContext context) {
+    return FloatingActionButton.extended(
+      onPressed: () => _showStockPicker(context),
+      backgroundColor: const Color(0xFF3B82F6),
+      elevation: 4,
+      icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+      label: const AppText(
+        'Add Stock',
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 14,
+      ),
+    );
+  }
+
+  Widget _buildEmptyCTA() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                ),
+              ),
+              child: const Icon(
+                Icons.playlist_add_rounded,
+                size: 32,
+                color: Color(0xFF3B82F6),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const AppText(
+              'Watchlist is empty',
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 8),
+            const AppText(
+              'Tap "Add Stock" below to start\ntracking your favourite stocks.',
+              color: Colors.white38,
+              fontSize: 13,
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ── Dialogs ──
-
   void _showCreateWatchlistDialog(BuildContext context) {
     final controller = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const AppText('New Watchlist', fontWeight: FontWeight.bold),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 20,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'Watchlist name',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.blueAccent),
-            ),
-          ),
-          onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              context.read<WatchlistManagerCubit>().createWatchlist(
-                value.trim(),
-              );
-              Navigator.pop(ctx);
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const AppText('Cancel', color: Colors.white38, fontSize: 14),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                context.read<WatchlistManagerCubit>().createWatchlist(name);
-                Navigator.pop(ctx);
-              }
-            },
-            child: const AppText(
-              'Create',
-              color: Colors.blueAccent,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-        ],
+      builder: (ctx) => _WatchlistNameDialog(
+        title: 'New Watchlist',
+        controller: controller,
+        confirmLabel: 'Create',
+        onConfirm: (name) {
+          context.read<WatchlistManagerCubit>().createWatchlist(name);
+          Navigator.pop(ctx);
+        },
       ),
     );
   }
@@ -211,61 +172,21 @@ class _ReorderWatchlistScreenState extends State<ReorderWatchlistScreen> {
     final current = cubit.state.watchlists.firstWhere(
       (w) => w.id == watchlistId,
     );
-    final controller = TextEditingController(text: current.name);
-    controller.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: current.name.length,
-    );
+    final controller = TextEditingController(text: current.name)
+      ..selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: current.name.length,
+      );
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const AppText('Rename Watchlist', fontWeight: FontWeight.bold),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 20,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'New name',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.blueAccent),
-            ),
-          ),
-          onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              cubit.renameWatchlist(watchlistId, value.trim());
-              Navigator.pop(ctx);
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const AppText('Cancel', color: Colors.white38, fontSize: 14),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                cubit.renameWatchlist(watchlistId, name);
-                Navigator.pop(ctx);
-              }
-            },
-            child: const AppText(
-              'Save',
-              color: Colors.blueAccent,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-        ],
+      builder: (ctx) => _WatchlistNameDialog(
+        title: 'Rename Watchlist',
+        controller: controller,
+        confirmLabel: 'Save',
+        onConfirm: (name) {
+          cubit.renameWatchlist(watchlistId, name);
+          Navigator.pop(ctx);
+        },
       ),
     );
   }
@@ -275,30 +196,31 @@ class _ReorderWatchlistScreenState extends State<ReorderWatchlistScreen> {
     if (cubit.state.watchlists.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: AppText(
-            'Cannot delete the last watchlist',
-            color: Colors.white,
-          ),
+          content: Text('Cannot delete the last watchlist'),
           backgroundColor: Colors.redAccent,
         ),
       );
       return;
     }
-
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const AppText('Delete Watchlist', fontWeight: FontWeight.bold),
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const AppText(
+          'Delete Watchlist?',
+          fontWeight: FontWeight.bold,
+          fontSize: 17,
+        ),
         content: const AppText(
-          'This action cannot be undone. All stocks in this watchlist will be removed.',
+          'All stocks in this watchlist will be removed. This cannot be undone.',
           color: Colors.white54,
-          fontSize: 14,
+          fontSize: 13,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const AppText('Cancel', color: Colors.white38, fontSize: 14),
+            child: const AppText('Cancel', color: Colors.white38),
           ),
           TextButton(
             onPressed: () {
@@ -307,9 +229,8 @@ class _ReorderWatchlistScreenState extends State<ReorderWatchlistScreen> {
             },
             child: const AppText(
               'Delete',
-              color: Colors.redAccent,
+              color: Color(0xFFEF4444),
               fontWeight: FontWeight.bold,
-              fontSize: 14,
             ),
           ),
         ],
@@ -321,96 +242,290 @@ class _ReorderWatchlistScreenState extends State<ReorderWatchlistScreen> {
     final cubit = context.read<WatchlistManagerCubit>();
     final selected = cubit.state.selectedWatchlist;
     if (selected == null) return;
-
     final allSymbols = cubit.repository.getAllAvailableSymbols();
-
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: const Color(0xFF141414),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) {
-        return BlocBuilder<WatchlistManagerCubit, WatchlistManagerState>(
-          builder: (context, state) {
-            final currentSymbols = state.selectedWatchlist?.symbols ?? [];
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.85,
+        builder: (_, scrollCtrl) =>
+            BlocBuilder<WatchlistManagerCubit, WatchlistManagerState>(
+              builder: (context, state) {
+                final currentSymbols = state.selectedWatchlist?.symbols ?? [];
+                return Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        AppText(
-                          'Add Stock',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ],
+                    const SizedBox(height: 16),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          AppText(
+                            'Add Stock',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: allSymbols.length,
-                      itemBuilder: (context, index) {
-                        final symbol = allSymbols[index];
-                        final isInWatchlist = currentSymbols.contains(symbol);
-
-                        return _StockPickerRow(
-                          symbol: symbol,
-                          isInWatchlist: isInWatchlist,
-                          onTap: isInWatchlist
-                              ? null
-                              : () {
-                                  cubit.addStock(selected.id, symbol);
-                                  HapticFeedback.lightImpact();
-                                },
-                        );
-                      },
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollCtrl,
+                        itemCount: allSymbols.length,
+                        itemBuilder: (context, index) {
+                          final symbol = allSymbols[index];
+                          final isInWatchlist = currentSymbols.contains(symbol);
+                          return _StockPickerRow(
+                            symbol: symbol,
+                            isInWatchlist: isInWatchlist,
+                            onTap: isInWatchlist
+                                ? null
+                                : () {
+                                    cubit.addStock(selected.id, symbol);
+                                    HapticFeedback.lightImpact();
+                                  },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+                  ],
+                );
+              },
+            ),
+      ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Extracted Widgets — for performance isolation
-// ─────────────────────────────────────────────────────────────
-
-/// Expandable/collapsible watchlist selector section.
-class _WatchlistSelector extends StatelessWidget {
+// ── Watchlist Manager Panel ──
+class _WatchlistManagerPanel extends StatefulWidget {
   final List<CustomWatchlist> watchlists;
   final String selectedId;
-  final bool isExpanded;
-  final VoidCallback onToggleExpand;
   final ValueChanged<String> onSelect;
   final ValueChanged<String> onRename;
   final ValueChanged<String> onDelete;
+  final VoidCallback onCreateNew;
 
-  const _WatchlistSelector({
+  const _WatchlistManagerPanel({
     required this.watchlists,
     required this.selectedId,
-    required this.isExpanded,
-    required this.onToggleExpand,
+    required this.onSelect,
+    required this.onRename,
+    required this.onDelete,
+    required this.onCreateNew,
+  });
+
+  @override
+  State<_WatchlistManagerPanel> createState() => _WatchlistManagerPanelState();
+}
+
+class _WatchlistManagerPanelState extends State<_WatchlistManagerPanel> {
+  bool _isExpanded = false;
+
+  void _toggleExpand() => setState(() => _isExpanded = !_isExpanded);
+
+  @override
+  Widget build(BuildContext context) {
+    final watchlists = widget.watchlists;
+    final selectedId = widget.selectedId;
+    final selected = watchlists.firstWhere(
+      (w) => w.id == selectedId,
+      orElse: () => watchlists.first,
+    );
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161616),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // ── Selected watchlist header ──
+          GestureDetector(
+            onTap: _toggleExpand,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.bookmark_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          selected.name,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        const SizedBox(height: 2),
+                        AppText(
+                          '${selected.symbols.length} stocks tracking',
+                          fontSize: 11,
+                          color: Colors.white54,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Rename & Delete always visible
+                  if (!_isExpanded) ...[
+                    _ActionIcon(
+                      icon: Icons.edit_rounded,
+                      color: Colors.white54,
+                      onTap: () => widget.onRename(selectedId),
+                    ),
+                    const SizedBox(width: 4),
+                    _ActionIcon(
+                      icon: Icons.delete_outline_rounded,
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.8),
+                      onTap: () => widget.onDelete(selectedId),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  AnimatedRotation(
+                    turns: _isExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 220),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Colors.white38,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Expanded list of all watchlists ──
+          AnimatedSize(
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeInOut,
+            child: _isExpanded
+                ? Column(
+                    children: [
+                      Container(
+                        height: 1,
+                        color: Colors.white.withValues(alpha: 0.06),
+                      ),
+                      ...watchlists.map(
+                        (w) => _WatchlistRow(
+                          watchlist: w,
+                          isSelected: w.id == selectedId,
+                          onSelect: () {
+                            widget.onSelect(w.id);
+                            setState(() => _isExpanded = false);
+                          },
+                          onRename: () => widget.onRename(w.id),
+                          onDelete: () => widget.onDelete(w.id),
+                        ),
+                      ),
+                      // ── Create New Watchlist row ──
+                      Container(
+                        height: 1,
+                        color: Colors.white.withValues(alpha: 0.06),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          widget.onCreateNew();
+                          setState(() => _isExpanded = false);
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    style: BorderStyle.solid,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add_rounded,
+                                  size: 20,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              const AppText(
+                                'Create new watchlist',
+                                fontSize: 14,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WatchlistRow extends StatelessWidget {
+  final CustomWatchlist watchlist;
+  final bool isSelected;
+  final VoidCallback onSelect;
+  final VoidCallback onRename;
+  final VoidCallback onDelete;
+
+  const _WatchlistRow({
+    required this.watchlist,
+    required this.isSelected,
     required this.onSelect,
     required this.onRename,
     required this.onDelete,
@@ -418,212 +533,56 @@ class _WatchlistSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selected = watchlists.firstWhere(
-      (w) => w.id == selectedId,
-      orElse: () => watchlists.first,
-    );
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Selected watchlist header (always visible)
-        GestureDetector(
-          onTap: onToggleExpand,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.blueAccent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.blueAccent.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.list_alt_rounded,
-                  color: Colors.blueAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        selected.name,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.white,
-                      ),
-                      AppText(
-                        '${selected.symbols.length} stocks',
-                        fontSize: 11,
-                        color: Colors.white38,
-                      ),
-                    ],
-                  ),
-                ),
-                AnimatedRotation(
-                  turns: isExpanded ? 0.5 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.white38,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Expanded watchlist chips
-        AnimatedSize(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          child: isExpanded
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: watchlists.map<Widget>((watchlist) {
-                      final isSelected = watchlist.id == selectedId;
-                      return GestureDetector(
-                        onTap: () => onSelect(watchlist.id),
-                        onLongPress: () {
-                          HapticFeedback.mediumImpact();
-                          _showContextMenu(context, watchlist);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.blueAccent.withValues(alpha: 0.15)
-                                : Colors.white.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.blueAccent.withValues(alpha: 0.4)
-                                  : Colors.white.withValues(alpha: 0.08),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isSelected
-                                    ? Icons.check_circle
-                                    : Icons.circle_outlined,
-                                size: 14,
-                                color: isSelected
-                                    ? Colors.blueAccent
-                                    : Colors.white24,
-                              ),
-                              const SizedBox(width: 8),
-                              AppText(
-                                watchlist.name,
-                                fontSize: 13,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected
-                                    ? Colors.white
-                                    : Colors.white54,
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.06),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: AppText(
-                                  '${watchlist.symbols.length}',
-                                  fontSize: 10,
-                                  color: Colors.white38,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
-
-  void _showContextMenu(BuildContext context, dynamic watchlist) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return GestureDetector(
+      onTap: onSelect,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        color: isSelected
+            ? const Color(0xFF3B82F6).withValues(alpha: 0.06)
+            : Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        child: Row(
           children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              size: 18,
+              color: isSelected ? const Color(0xFF3B82F6) : Colors.white24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    watchlist.name,
+                    fontSize: 14,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: isSelected ? Colors.white : Colors.white70,
+                  ),
+                  AppText(
+                    '${watchlist.symbols.length} stocks',
+                    fontSize: 11,
+                    color: Colors.white30,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: AppText(
-                watchlist.name,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            _ActionIcon(
+              icon: Icons.edit_rounded,
+              color: Colors.white38,
+              onTap: onRename,
             ),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(Icons.edit, color: Colors.blueAccent),
-              title: const AppText('Rename', fontSize: 14),
-              onTap: () {
-                Navigator.pop(ctx);
-                onRename(watchlist.id);
-              },
+            const SizedBox(width: 2),
+            _ActionIcon(
+              icon: Icons.delete_outline_rounded,
+              color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+              onTap: onDelete,
             ),
-            ListTile(
-              leading: const Icon(
-                Icons.delete_outline,
-                color: Colors.redAccent,
-              ),
-              title: const AppText(
-                'Delete',
-                fontSize: 14,
-                color: Colors.redAccent,
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                onDelete(watchlist.id);
-              },
-            ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -631,8 +590,93 @@ class _WatchlistSelector extends StatelessWidget {
   }
 }
 
-/// Performant reorderable stock list that uses the same StockCard widget.
-/// Completely isolated from price tick rebuilds via buildWhen.
+class _ActionIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionIcon({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Icon(icon, size: 18, color: color),
+      ),
+    );
+  }
+}
+
+// ── Shared dialog for create / rename ──
+class _WatchlistNameDialog extends StatelessWidget {
+  final String title;
+  final TextEditingController controller;
+  final String confirmLabel;
+  final ValueChanged<String> onConfirm;
+
+  const _WatchlistNameDialog({
+    required this.title,
+    required this.controller,
+    required this.confirmLabel,
+    required this.onConfirm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: AppText(title, fontWeight: FontWeight.bold, fontSize: 17),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        maxLength: 20,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        inputFormatters: [CapitalizeFirstLetterFormatter()],
+        decoration: InputDecoration(
+          hintText: 'Watchlist name',
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.25)),
+          counterStyle: TextStyle(color: Colors.white24, fontSize: 10),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF3B82F6), width: 2),
+          ),
+        ),
+        onSubmitted: (v) {
+          if (v.trim().isNotEmpty) onConfirm(v.trim());
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const AppText('Cancel', color: Colors.white38),
+        ),
+        TextButton(
+          onPressed: () {
+            final n = controller.text.trim();
+            if (n.isNotEmpty) onConfirm(n);
+          },
+          child: AppText(
+            confirmLabel,
+            color: const Color(0xFF3B82F6),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Reorderable stock list ──
 class _StockReorderableList extends StatelessWidget {
   final List<String> symbols;
   final String watchlistId;
@@ -673,13 +717,9 @@ class _StockReorderableList extends StatelessWidget {
           ),
         );
       },
-      onReorder: (oldIndex, newIndex) {
-        context.read<WatchlistManagerCubit>().reorderStocks(
-          watchlistId,
-          oldIndex,
-          newIndex,
-        );
-      },
+      onReorder: (oldIndex, newIndex) => context
+          .read<WatchlistManagerCubit>()
+          .reorderStocks(watchlistId, oldIndex, newIndex),
       itemBuilder: (context, index) {
         final symbol = symbols[index];
         return Dismissible(
@@ -688,11 +728,11 @@ class _StockReorderableList extends StatelessWidget {
           background: Container(
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 24),
-            color: Colors.redAccent.withValues(alpha: 0.15),
+            color: const Color(0xFFEF4444).withValues(alpha: 0.12),
             child: const Icon(
-              Icons.delete_outline,
-              color: Colors.redAccent,
-              size: 24,
+              Icons.delete_outline_rounded,
+              color: Color(0xFFEF4444),
+              size: 22,
             ),
           ),
           onDismissed: (_) {
@@ -706,27 +746,22 @@ class _StockReorderableList extends StatelessWidget {
             key: ValueKey(symbol),
             index: index,
             child: BlocSelector<WatchlistBloc, WatchlistState, bool>(
-              // Only need to know if stock exists — price rendering is inside StockCard
               selector: (state) => state.stocks.any((s) => s.symbol == symbol),
               builder: (context, exists) {
                 if (!exists) return const SizedBox.shrink();
-
                 final stock = context
                     .read<WatchlistBloc>()
                     .state
                     .stocks
                     .firstWhere((s) => s.symbol == symbol);
-
                 return StockCard(
                   symbol: symbol,
                   verticalPadding: 8,
-                  onTap: () {
-                    context.push(
-                      StockDetailScreen(stock: stock),
-                      animation: AnimationType.slide,
-                      direction: NavSlideDirection.rtl,
-                    );
-                  },
+                  onTap: () => context.push(
+                    StockDetailScreen(stock: stock),
+                    animation: AnimationType.slide,
+                    direction: NavSlideDirection.rtl,
+                  ),
                 );
               },
             ),
@@ -737,8 +772,7 @@ class _StockReorderableList extends StatelessWidget {
   }
 }
 
-/// A single row in the stock picker bottom sheet.
-/// Shows live price via BlocSelector for premium feel.
+// ── Stock picker row ──
 class _StockPickerRow extends StatelessWidget {
   final String symbol;
   final bool isInWatchlist;
@@ -767,24 +801,31 @@ class _StockPickerRow extends StatelessWidget {
       },
       builder: (context, data) {
         final isPositive = data.change >= 0;
-        final color = isPositive ? Colors.greenAccent : Colors.redAccent;
-
+        final color = isPositive
+            ? const Color(0xFF22C55E)
+            : const Color(0xFFEF4444);
         return ListTile(
           onTap: onTap,
-          leading: CircleAvatar(
-            backgroundColor: isInWatchlist
-                ? Colors.blueAccent.withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.05),
-            radius: 18,
+          dense: true,
+          leading: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: isInWatchlist
+                  ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(
-              isInWatchlist ? Icons.check : Icons.add,
+              isInWatchlist ? Icons.check_rounded : Icons.add_rounded,
               size: 18,
-              color: isInWatchlist ? Colors.blueAccent : Colors.white38,
+              color: isInWatchlist ? const Color(0xFF3B82F6) : Colors.white38,
             ),
           ),
           title: AppText(
             symbol,
             fontWeight: FontWeight.w600,
+            fontSize: 14,
             color: isInWatchlist ? Colors.white38 : Colors.white,
           ),
           subtitle: AppText(
@@ -798,7 +839,7 @@ class _StockPickerRow extends StatelessWidget {
             children: [
               AppText(
                 '₹${data.price.toStringAsFixed(2)}',
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: isInWatchlist ? Colors.white24 : Colors.white,
               ),

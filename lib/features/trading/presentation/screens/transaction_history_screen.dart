@@ -33,7 +33,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       body: BlocListener<TradeBloc, TradeState>(
         listener: (context, state) {
           if (state is HistoryLoaded) {
@@ -44,9 +43,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           slivers: [
             SliverAppBar(
               pinned: true,
-              backgroundColor: const Color(0xFF121212),
-              elevation: 0,
-              surfaceTintColor: Colors.transparent,
               title: const AppText(
                 'Orders',
                 fontSize: 24,

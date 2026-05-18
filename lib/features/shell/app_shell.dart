@@ -53,13 +53,6 @@ class _AppShellState extends State<AppShell> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onTabTapped,
-          backgroundColor: const Color(0xFF121212),
-          selectedItemColor: Colors.blueAccent,
-          unselectedItemColor: Colors.white38,
-          type: BottomNavigationBarType.fixed,
-          showUnselectedLabels: true,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.show_chart_rounded),

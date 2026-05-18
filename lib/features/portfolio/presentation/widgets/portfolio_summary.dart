@@ -19,49 +19,120 @@ class PortfolioSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isProfit = pnlPaisa >= 0;
-    final color = isProfit ? Colors.greenAccent : Colors.redAccent;
+    final pnlColor = isProfit ? const Color(0xFF22C55E) : const Color(0xFFEF4444);
+    final pnlBgColor = isProfit
+        ? const Color(0xFF22C55E).withValues(alpha: 0.08)
+        : const Color(0xFFEF4444).withValues(alpha: 0.08);
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1E1E1E),
-            const Color(0xFF121212),
-          ],
+        color: const Color(0xFF161616),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: pnlColor.withValues(alpha: 0.15),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.05),
-            blurRadius: 20,
-            spreadRadius: -10,
+            color: pnlColor.withValues(alpha: 0.06),
+            blurRadius: 24,
+            spreadRadius: -4,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText('Current Value', color: Colors.white54, fontSize: 14),
-          const SizedBox(height: 4),
-          AppText(
-            MoneyUtils.format(currentValuePaisa),
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
+          // ── Current Value (hero number) ──
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppText(
+                      'CURRENT VALUE',
+                      fontSize: 10,
+                      color: Colors.white38,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                    const SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: AppText(
+                        MoneyUtils.format(currentValuePaisa),
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // ── P&L Badge ──
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: pnlBgColor,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: pnlColor.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isProfit
+                          ? Icons.trending_up_rounded
+                          : Icons.trending_down_rounded,
+                      size: 14,
+                      color: pnlColor,
+                    ),
+                    const SizedBox(width: 4),
+                    AppText(
+                      '${isProfit ? '+' : ''}${pnlPercent.toStringAsFixed(2)}%',
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: pnlColor,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 16),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.05)),
+          const SizedBox(height: 16),
+
+          // ── Invested / P&L row ──
           Row(
             children: [
-              _buildMetric('Invested', MoneyUtils.format(investedPaisa)),
-              const Spacer(),
-              _buildMetric(
-                'Total P&L',
-                '${isProfit ? "+" : ""}${MoneyUtils.format(pnlPaisa)}',
-                valueColor: color,
-                suffix: ' (${pnlPercent.toStringAsFixed(2)}%)',
+              Expanded(
+                child: _MetricTile(
+                  label: 'INVESTED',
+                  value: MoneyUtils.format(investedPaisa),
+                  valueColor: Colors.white70,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+              Expanded(
+                child: _MetricTile(
+                  label: 'TOTAL P&L',
+                  value:
+                      '${isProfit ? "+" : ""}${MoneyUtils.format(pnlPaisa)}',
+                  valueColor: pnlColor,
+                  alignRight: true,
+                ),
               ),
             ],
           ),
@@ -69,21 +140,54 @@ class PortfolioSummary extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildMetric(String label, String value, {Color? valueColor, String? suffix}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(label, color: Colors.white38, fontSize: 12),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            AppText(value, fontSize: 16, fontWeight: FontWeight.bold, color: valueColor),
-            if (suffix != null)
-              AppText(suffix, fontSize: 14, fontWeight: FontWeight.bold, color: valueColor),
-          ],
-        ),
-      ],
+class _MetricTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color valueColor;
+  final bool alignRight;
+
+  const _MetricTile({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    this.alignRight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final align =
+        alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: alignRight ? 16 : 0,
+        right: alignRight ? 0 : 16,
+      ),
+      child: Column(
+        crossAxisAlignment: align,
+        children: [
+          AppText(
+            label,
+            fontSize: 10,
+            color: Colors.white38,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+          ),
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment:
+                alignRight ? Alignment.centerRight : Alignment.centerLeft,
+            child: AppText(
+              value,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
