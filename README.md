@@ -4,6 +4,26 @@ MarketPulse is an ultra-high performance, Clean Architecture-driven Flutter appl
 
 ---
 
+## 🎬 Walkthrough Demo Video
+
+Click the link below to watch a short walkthrough of the application demonstrating all the implemented features:
+
+👉 **[Watch the end-to-end Loom video walkthrough](https://www.loom.com/share/f96400645ecb4e71961bba9c8c3b532d)**
+
+---
+
+## 📸 Screenshots Gallery
+
+<p align="center">
+  <img src="screenshots/market_live_overview.jpg" width="19%" alt="Market Live Overview" />
+  <img src="screenshots/watchlist.jpg" width="19%" alt="Watchlist" />
+  <img src="screenshots/add_stock_picker.jpg" width="19%" alt="Add Stock Picker" />
+  <img src="screenshots/portfolio.jpg" width="19%" alt="Portfolio" />
+  <img src="screenshots/transaction_history.jpg" width="19%" alt="Transaction History" />
+</p>
+
+---
+
 ## 🎯 Architecture & Objective
 
 MarketPulse is structured around the absolute highest standards of **SOLID Principles** and **Clean Architecture (Feature-First pattern)**:

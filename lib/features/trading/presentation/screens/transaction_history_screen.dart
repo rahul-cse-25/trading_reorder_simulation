@@ -110,7 +110,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     const SliverToBoxAdapter(
                       child: SafeArea(
                         top: false,
-                        child: SizedBox(height: 100),
+                        child: SizedBox.shrink(),
                       ),
                     ),
                   ],
