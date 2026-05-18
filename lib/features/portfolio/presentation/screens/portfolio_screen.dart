@@ -45,10 +45,21 @@ class PortfolioScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: AppText('YOUR HOLDINGS', fontSize: 12, color: Colors.white38, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const AppText(
+                            'YOUR HOLDINGS',
+                            fontSize: 12,
+                            color: Colors.white38,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          _buildSortSelector(context),
+                        ],
+                      ),
                     ),
                   ),
                   SliverPadding(
@@ -68,6 +79,53 @@ class PortfolioScreen extends StatelessWidget {
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildSortSelector(BuildContext context) {
+    final portfolioBloc = context.read<PortfolioBloc>();
+    final currentSort = portfolioBloc.currentSortType;
+
+    return Row(
+      children: [
+        const AppText('Sort: ', fontSize: 11, color: Colors.white24),
+        _buildSortButton(context, 'P&L', PortfolioSortType.pnl, currentSort),
+        const SizedBox(width: 6),
+        _buildSortButton(context, 'Symbol', PortfolioSortType.symbol, currentSort),
+        const SizedBox(width: 6),
+        _buildSortButton(context, 'Value', PortfolioSortType.currentValue, currentSort),
+      ],
+    );
+  }
+
+  Widget _buildSortButton(
+    BuildContext context,
+    String label,
+    PortfolioSortType type,
+    PortfolioSortType current,
+  ) {
+    final isSelected = type == current;
+    return GestureDetector(
+      onTap: () {
+        context.read<PortfolioBloc>().add(ChangePortfolioSortType(type));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blueAccent.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected ? Colors.blueAccent : Colors.white10,
+            width: 1,
+          ),
+        ),
+        child: AppText(
+          label,
+          fontSize: 11,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? Colors.blueAccent : Colors.white38,
+        ),
       ),
     );
   }

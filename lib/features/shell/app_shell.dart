@@ -62,7 +62,7 @@ class _AppShellState extends State<AppShell> {
             BottomNavigationBarItem(
               icon: Icon(Icons.show_chart_rounded),
               activeIcon: Icon(Icons.show_chart_rounded, color: Colors.blueAccent),
-              label: 'Watchlist',
+              label: 'Markets',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.pie_chart_outline_rounded),

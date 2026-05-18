@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/widgets/app_text.dart';
+import '../../../watchlist/domain/entities/stock.dart';
+import '../../../watchlist/presentation/bloc/watchlist_bloc.dart';
+import '../../../watchlist/presentation/screens/stock_detail_screen.dart';
 import '../bloc/portfolio_state.dart';
 
 class HoldingCard extends StatelessWidget {
@@ -13,14 +17,36 @@ class HoldingCard extends StatelessWidget {
     final isProfit = display.pnlPaisa >= 0;
     final color = isProfit ? Colors.greenAccent : Colors.redAccent;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
+    return GestureDetector(
+      onTap: () {
+        final watchlistBloc = context.read<WatchlistBloc>();
+        final stock = watchlistBloc.state.stocks.firstWhere(
+          (s) => s.symbol == display.holding.symbol,
+          orElse: () => Stock(
+            symbol: display.holding.symbol,
+            name: display.holding.symbol,
+            price: display.currentPrice,
+            change: 0.0,
+            percentChange: 0.0,
+            candles: const [],
+          ),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StockDetailScreen(stock: stock),
+          ),
+        );
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
       child: Column(
         children: [
           Row(
@@ -73,8 +99,9 @@ class HoldingCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSmallMetric(String label, String value) {
     return Column(

@@ -19,6 +19,10 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
   StreamSubscription? _simulationSubscription;
   StreamSubscription? _orchestratorSubscription;
 
+  PortfolioSortType _currentSortType = PortfolioSortType.pnl;
+
+  PortfolioSortType get currentSortType => _currentSortType;
+
   PortfolioBloc({
     required this.repository,
     required this.orchestrator,
@@ -26,6 +30,7 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
   }) : super(PortfolioInitial()) {
     on<LoadPortfolio>(_onLoadPortfolio);
     on<UpdateLivePrices>(_onUpdateLivePrices);
+    on<ChangePortfolioSortType>(_onChangeSortType);
 
     // Listen to live prices directly from the SimulationService (Direct & Decoupled)
     _simulationSubscription = simulationService.stream.listen((updates) {
@@ -41,6 +46,43 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
         add(LoadPortfolio()); 
       }
     });
+  }
+
+  Future<void> _onChangeSortType(
+    ChangePortfolioSortType event,
+    Emitter<PortfolioState> emit,
+  ) async {
+    _currentSortType = event.sortType;
+    final currentState = state;
+    if (currentState is PortfolioLoaded) {
+      final sortedList = List<HoldingDisplayModel>.from(currentState.holdings);
+      _sortHoldings(sortedList);
+      emit(
+        PortfolioLoaded(
+          holdings: sortedList,
+          totalInvestedPaisa: currentState.totalInvestedPaisa,
+          totalCurrentValuePaisa: currentState.totalCurrentValuePaisa,
+          totalPnLPaisa: currentState.totalPnLPaisa,
+          totalPnLPercent: currentState.totalPnLPercent,
+        ),
+      );
+    } else {
+      add(LoadPortfolio());
+    }
+  }
+
+  void _sortHoldings(List<HoldingDisplayModel> list) {
+    switch (_currentSortType) {
+      case PortfolioSortType.pnl:
+        list.sort((a, b) => b.pnlPaisa.compareTo(a.pnlPaisa));
+        break;
+      case PortfolioSortType.symbol:
+        list.sort((a, b) => a.holding.symbol.compareTo(b.holding.symbol));
+        break;
+      case PortfolioSortType.currentValue:
+        list.sort((a, b) => b.currentValuePaisa.compareTo(a.currentValuePaisa));
+        break;
+    }
   }
 
   Future<void> _onLoadPortfolio(
@@ -92,8 +134,8 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
         );
       }
 
-      // Auto-sort by P&L descending (Movers on top)
-      displayModels.sort((a, b) => b.pnlPaisa.compareTo(a.pnlPaisa));
+      // Sort according to selected sort criteria
+      _sortHoldings(displayModels);
 
       final totalPnL = totalCurrentValue - totalInvested;
       final totalPnLPercent = totalInvested > 0
@@ -160,8 +202,8 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
       );
     }
 
-    // Auto-sort by P&L descending (Movers on top)
-    displayModels.sort((a, b) => b.pnlPaisa.compareTo(a.pnlPaisa));
+    // Sort according to selected sort criteria
+    _sortHoldings(displayModels);
 
     final totalPnL = totalCurrentValue - totalInvested;
     final totalPnLPercent = totalInvested > 0

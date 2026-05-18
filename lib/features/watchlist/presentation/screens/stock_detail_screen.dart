@@ -327,21 +327,36 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
     final balance = context.read<WalletCubit>().state;
     final isBuy = _tradeType == TradeType.buy;
     
-    // Check if enough funds
+    // Check if enough funds (Buy)
     final hasEnoughFunds = !isBuy || balance >= totalCostPaisa;
+
+    // Check if enough holdings (Sell)
+    final portfolioState = context.read<PortfolioBloc>().state;
+    int qtyHeld = 0;
+    if (portfolioState is PortfolioLoaded) {
+      final holding = portfolioState.holdings
+          .where((h) => h.holding.symbol == stock.symbol)
+          .firstOrNull;
+      if (holding != null) {
+        qtyHeld = holding.holding.quantity;
+      }
+    }
+    final hasEnoughHoldings = isBuy || qtyHeld >= qty;
 
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const AppText('Estimated Total', color: Colors.white54),
+            AppText(isBuy ? 'Estimated Total' : 'Estimated Value', color: Colors.white54),
             AppText(MoneyUtils.format(totalCostPaisa), fontWeight: FontWeight.bold, fontSize: 18),
           ],
         ),
         const SizedBox(height: 20),
-        if (!hasEnoughFunds)
+        if (isBuy && !hasEnoughFunds)
           _buildAddFundsButton(totalCostPaisa - balance)
+        else if (!isBuy && !hasEnoughHoldings)
+          _buildSellWarningButton(qtyHeld)
         else
           SlideToConfirm(
             label: 'SLIDE TO ${isBuy ? "BUY" : "SELL"}',
@@ -358,6 +373,33 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
             },
           ),
       ],
+    );
+  }
+
+  Widget _buildSellWarningButton(int qtyHeld) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AppText('Insufficient Holdings', fontWeight: FontWeight.bold, color: Colors.redAccent),
+          const SizedBox(height: 2),
+          AppText(
+            qtyHeld > 0 
+              ? 'You only own $qtyHeld shares of this stock'
+              : 'You do not own any shares of this stock',
+            fontSize: 12,
+            color: Colors.white38,
+          ),
+        ],
+      ),
     );
   }
 
