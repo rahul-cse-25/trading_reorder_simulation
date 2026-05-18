@@ -85,12 +85,12 @@ class MockWatchlistData {
         candles: _generateSmartCandles('ICICIBANK', 1085.25, count: 5),
       ),
       StockModel(
-        symbol: 'HINDUNILVR',
-        name: 'Hindustan Unilever',
-        price: 2520.75,
-        change: -18.40,
-        percentChange: -0.72,
-        candles: _generateSmartCandles('HINDUNILVR', 2520.75, count: 5),
+        symbol: 'ITC',
+        name: 'ITC Limited',
+        price: 445.30,
+        change: 3.85,
+        percentChange: 0.87,
+        candles: _generateSmartCandles('ITC', 445.30, count: 5),
       ),
       StockModel(
         symbol: 'SBIN',
@@ -117,12 +117,12 @@ class MockWatchlistData {
         candles: _generateSmartCandles('LT', 3620.00, count: 5),
       ),
       StockModel(
-        symbol: 'ASIANPAINT',
-        name: 'Asian Paints',
-        price: 3105.40,
-        change: 6.20,
-        percentChange: 0.20,
-        candles: _generateSmartCandles('ASIANPAINT', 3105.40, count: 5),
+        symbol: 'AXISBANK',
+        name: 'Axis Bank Ltd',
+        price: 1142.50,
+        change: -5.60,
+        percentChange: -0.49,
+        candles: _generateSmartCandles('AXISBANK', 1142.50, count: 5),
       ),
     ];
   }

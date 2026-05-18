@@ -8,6 +8,7 @@ import '../../features/watchlist/data/datasource/mock_watchlist_data.dart';
 import '../../features/watchlist/data/repository/watchlist_repository_impl.dart';
 import '../../features/watchlist/domain/repository/watchlist_repository.dart';
 import '../../features/watchlist/presentation/bloc/watchlist_bloc.dart';
+import '../../features/watchlist/presentation/bloc/watchlist_manager_cubit.dart';
 import '../../features/trading/domain/repository/trade_repository.dart';
 import '../../features/trading/data/repository/trade_repository_impl.dart';
 import '../../features/trading/domain/usecases/execute_trade_usecase.dart';
@@ -39,7 +40,7 @@ Future<void> initDI() async {
 
   // --- Repositories ---
   sl.registerLazySingleton<WatchlistRepository>(
-    () => WatchlistRepositoryImpl(sl()),
+    () => WatchlistRepositoryImpl(sl(), sl()),
   );
 
   sl.registerLazySingleton<TradeRepository>(
@@ -51,6 +52,7 @@ Future<void> initDI() async {
 
   // --- BLoCs ---
   sl.registerLazySingleton(() => WatchlistBloc(sl(), sl()));
+  sl.registerLazySingleton(() => WatchlistManagerCubit(repository: sl()));
   sl.registerLazySingleton(() => TradeBloc(executeTrade: sl(), repository: sl()));
   sl.registerLazySingleton(() => WalletCubit(repository: sl(), orchestrator: sl()));
   sl.registerLazySingleton(() => PortfolioBloc(
@@ -58,6 +60,4 @@ Future<void> initDI() async {
         orchestrator: sl(),
         simulationService: sl(),
       ));
-
-  // Note: Trade and Portfolio dependencies will be added as we implement those features.
 }

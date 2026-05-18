@@ -10,6 +10,7 @@ import 'features/trading/presentation/bloc/trade_event.dart';
 import 'features/trading/presentation/bloc/wallet_cubit.dart';
 import 'features/watchlist/presentation/bloc/watchlist_bloc.dart';
 import 'features/watchlist/presentation/bloc/watchlist_event.dart';
+import 'features/watchlist/presentation/bloc/watchlist_manager_cubit.dart';
 
 class TradingApp extends StatelessWidget {
   const TradingApp({super.key});
@@ -20,6 +21,10 @@ class TradingApp extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => sl<WatchlistBloc>()..add(LoadStocks()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              sl<WatchlistManagerCubit>()..loadWatchlists(),
         ),
         BlocProvider(create: (context) => sl<TradeBloc>()..add(LoadHistory())),
         BlocProvider(create: (context) => sl<WalletCubit>()),
