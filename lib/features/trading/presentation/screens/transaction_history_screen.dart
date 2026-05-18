@@ -52,56 +52,70 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 color: Colors.white,
               ),
             ),
-            SliverToBoxAdapter(
-              child: FutureBuilder<List<Trade>>(
-                future: _historyFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.blueAccent,
-                        ),
+            FutureBuilder<List<Trade>>(
+              future: _historyFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.blueAccent,
                       ),
-                    );
-                  }
-
-                  final history = snapshot.data ?? [];
-                  if (history.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSummaryCard(history),
-                        const SizedBox(height: 24),
-                        const AppText(
-                          'RECENT TRANSACTIONS',
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white24,
-                          letterSpacing: 1.2,
-                        ),
-                        const SizedBox(height: 12),
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemCount: history.length,
-                          itemBuilder: (context, index) {
-                            return _buildTransactionCard(history[index]);
-                          },
-                        ),
-                        const SafeArea(top: false, child: SizedBox.shrink()),
-                      ],
                     ),
                   );
-                },
-              ),
+                }
+
+                final history = snapshot.data ?? [];
+                if (history.isEmpty) {
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildEmptyState(),
+                  );
+                }
+
+                return SliverMainAxisGroup(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSummaryCard(history),
+                            const SizedBox(height: 24),
+                            const AppText(
+                              'RECENT TRANSACTIONS',
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white24,
+                              letterSpacing: 1.2,
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return _buildTransactionCard(history[index]);
+                          },
+                          childCount: history.length,
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SafeArea(
+                        top: false,
+                        child: SizedBox(height: 100),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

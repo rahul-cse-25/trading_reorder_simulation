@@ -25,7 +25,23 @@ class MarketUpdate {
 
 class SimulationService {
   final _controller = StreamController<List<MarketUpdate>>.broadcast();
+  final _timeController = StreamController<String>.broadcast();
   Timer? _timer;
+
+  Duration _tickDuration = const Duration(milliseconds: 1000);
+  List<Stock>? _lastStocks;
+  List<MarketIndex>? _lastIndices;
+
+  Duration get tickDuration => _tickDuration;
+  Stream<String> get timeStream => _timeController.stream;
+
+  void setTickDuration(Duration d) {
+    if (_tickDuration == d) return;
+    _tickDuration = d;
+    if (_lastStocks != null && _lastIndices != null) {
+      start(stocks: _lastStocks!, indices: _lastIndices!);
+    }
+  }
 
   // Market clock configuration:
   // Starts at 9:15 AM (33300s) and closes at 3:30 PM (55800s).
@@ -74,6 +90,9 @@ class SimulationService {
     required List<Stock> stocks,
     required List<MarketIndex> indices,
   }) {
+    _lastStocks = stocks;
+    _lastIndices = indices;
+
     // Populate base initial anchor prices if empty to avoid price explosions
     if (_initialPrices.isEmpty) {
       for (final s in stocks) {
@@ -85,7 +104,7 @@ class SimulationService {
     }
 
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 1000), (_) {
+    _timer = Timer.periodic(_tickDuration, (_) {
       // Step simulated clock
       _currentElapsedSeconds += marketSecondsPerTick;
       if (_currentElapsedSeconds > marketCloseSeconds) {
@@ -105,6 +124,7 @@ class SimulationService {
       if (updates.isNotEmpty) {
         _controller.add(updates);
       }
+      _timeController.add(formattedMarketTime);
     });
   }
 

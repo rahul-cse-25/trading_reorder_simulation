@@ -15,4 +15,11 @@ abstract class TradeRepository {
   /// --- Holdings (Portfolio) ---
   Future<List<Holding>> getHoldings();
   Future<void> saveHoldings(List<Holding> holdings);
+
+  /// --- Transactional Batch ---
+  Future<void> executeTradeTransaction({
+    required int newBalancePaisa,
+    required List<Holding> updatedHoldings,
+    required Trade newTrade,
+  });
 }

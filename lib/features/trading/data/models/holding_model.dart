@@ -4,7 +4,7 @@ class HoldingModel {
   final String symbol;
   final String stockName;
   final int quantity;
-  final int avgBuyPricePaisa;
+  final double avgBuyPricePaisa;
   final int totalCostPaisa;
 
   HoldingModel({
@@ -27,7 +27,7 @@ class HoldingModel {
     symbol: json['symbol'],
     stockName: json['stockName'],
     quantity: json['quantity'],
-    avgBuyPricePaisa: json['avgBuyPricePaisa'],
+    avgBuyPricePaisa: (json['avgBuyPricePaisa'] as num).toDouble(),
     totalCostPaisa: json['totalCostPaisa'],
   );
 
@@ -35,7 +35,6 @@ class HoldingModel {
     symbol: symbol,
     stockName: stockName,
     quantity: quantity,
-    avgBuyPricePaisa: avgBuyPricePaisa,
     totalCostPaisa: totalCostPaisa,
   );
 

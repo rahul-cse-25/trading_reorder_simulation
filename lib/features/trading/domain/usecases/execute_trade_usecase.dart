@@ -73,13 +73,11 @@ class ExecuteTradeUseCase {
 
     // 5. Update system state
     try {
-      // Update Wallet
       final newBalance = type == TradeType.buy 
           ? balancePaisa - totalCostPaisa 
           : balancePaisa + totalCostPaisa;
-      await repository.updateWalletBalance(newBalance);
 
-      // Update Holdings
+      // Update Holdings (Computed in-memory first)
       final existingIndex = holdings.indexWhere((h) => h.symbol == symbol);
       final List<Holding> updatedHoldings = List.from(holdings);
 
@@ -91,7 +89,6 @@ class ExecuteTradeUseCase {
             symbol: symbol,
             stockName: stockName,
             quantity: quantity,
-            avgBuyPricePaisa: pricePaisa,
             totalCostPaisa: totalCostPaisa,
           ));
         }
@@ -105,10 +102,12 @@ class ExecuteTradeUseCase {
         }
       }
       
-      await repository.saveHoldings(updatedHoldings);
-
-      // Save Trade History
-      await repository.saveTrade(trade);
+      // 6. Execute atomic batch write transaction
+      await repository.executeTradeTransaction(
+        newBalancePaisa: newBalance,
+        updatedHoldings: updatedHoldings,
+        newTrade: trade,
+      );
 
       // --- Reactive Updates (WebSocket Mimic) ---
       // 1. Notify Orchestrator (Updates Wallet, Portfolio, History globally)

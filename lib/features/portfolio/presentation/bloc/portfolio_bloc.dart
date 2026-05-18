@@ -177,7 +177,7 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
     for (final holding in holdings) {
       final currentPrice =
           prices[holding.symbol] ??
-          MoneyUtils.toRupees(holding.avgBuyPricePaisa);
+          MoneyUtils.toRupees(holding.avgBuyPricePaisa.round());
       final currentPricePaisa = MoneyUtils.toPaisa(currentPrice);
 
       final currentValuePaisa = currentPricePaisa * holding.quantity;

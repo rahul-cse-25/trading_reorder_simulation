@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/simulation_service.dart';
+import '../../../../core/services/snackbar/manager.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../core/utils/navigator_ex.dart';
 import '../../../../shared/animated_widgets/shake_animator.dart';
@@ -58,17 +60,7 @@ class WatchlistScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
-                        StreamBuilder<List<MarketUpdate>>(
-                          stream: sl<SimulationService>().stream,
-                          builder: (context, snapshot) {
-                            return AppText(
-                              sl<SimulationService>().formattedMarketTime,
-                              fontSize: 12,
-                              color: Colors.white38,
-                              fontWeight: FontWeight.w600,
-                            );
-                          },
-                        ),
+                        const _WatchlistTimeBadge(),
                       ],
                     ),
                     BlocBuilder<WalletCubit, int>(
@@ -194,6 +186,90 @@ class WatchlistScreen extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+// ── Interactive Simulated Speed Control Pill ──
+class _WatchlistTimeBadge extends StatefulWidget {
+  const _WatchlistTimeBadge();
+
+  @override
+  State<_WatchlistTimeBadge> createState() => _WatchlistTimeBadgeState();
+}
+
+class _WatchlistTimeBadgeState extends State<_WatchlistTimeBadge> {
+  void _cycleSpeed() {
+    final service = sl<SimulationService>();
+    final currentMs = service.tickDuration.inMilliseconds;
+    
+    Duration nextDuration;
+    String label;
+    if (currentMs == 1000) {
+      nextDuration = const Duration(milliseconds: 500);
+      label = '2.0x';
+    } else if (currentMs == 500) {
+      nextDuration = const Duration(milliseconds: 200);
+      label = '5.0x (Stress Test)';
+    } else {
+      nextDuration = const Duration(milliseconds: 1000);
+      label = '1.0x (Default)';
+    }
+    
+    service.setTickDuration(nextDuration);
+    HapticFeedback.selectionClick();
+    
+    AppSnackbar.showSuccess('Simulation speed set to $label', showLabel: true);
+    setState(() {}); // Rebuild speed badge label
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final service = sl<SimulationService>();
+    final currentMs = service.tickDuration.inMilliseconds;
+    final speedLabel = currentMs == 1000 ? '1.0x' : (currentMs == 500 ? '2.0x' : '5.0x ⚡');
+
+    return GestureDetector(
+      onTap: _cycleSpeed,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            StreamBuilder<String>(
+              stream: service.timeStream,
+              initialData: service.formattedMarketTime,
+              builder: (context, snapshot) {
+                return AppText(
+                  snapshot.data ?? service.formattedMarketTime,
+                  fontSize: 12,
+                  color: Colors.white38,
+                  fontWeight: FontWeight.w600,
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.25),
+                  width: 0.5,
+                ),
+              ),
+              child: AppText(
+                speedLabel,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF3B82F6),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

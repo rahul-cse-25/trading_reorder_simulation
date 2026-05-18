@@ -7,12 +7,14 @@ import '../../../../core/services/floating_notification/manager.dart';
 import '../../../../core/services/simulation_service.dart';
 import '../../../../core/services/snackbar/manager.dart';
 import '../../../../core/utils/money_utils.dart';
+import '../../../../core/utils/navigator_ex.dart';
 import '../../../../shared/animated_widgets/animated_value_change.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/price_text.dart';
 import '../../../../shared/widgets/slide_to_confirm.dart';
 import '../../../portfolio/presentation/bloc/portfolio_bloc.dart';
 import '../../../portfolio/presentation/bloc/portfolio_state.dart';
+import '../../../trading/presentation/screens/trade_confirmation_screen.dart';
 import '../../../trading/domain/entities/trade.dart';
 import '../../../trading/presentation/bloc/trade_bloc.dart';
 import '../../../trading/presentation/bloc/trade_event.dart';
@@ -87,16 +89,18 @@ class _StockDetailScreenState extends State<StockDetailScreen>
     return BlocListener<TradeBloc, TradeState>(
       listener: (context, state) {
         if (state is TradeSuccess) {
+          // Navigate immediately to dedicated Trade Confirmation Screen
+          context.push(
+            TradeConfirmationScreen(trade: state.trade),
+            animation: AnimationType.fade,
+          );
+          
           AppFloating.show(
             child: _AppFloatingTradeNotification(trade: state.trade),
             options: const AppFloatingOptions(
               enableHapticOnAppear: true,
               showDuration: Duration(seconds: 4),
             ),
-          );
-          AppSnackbar.showSuccess(
-            'Order Executed Successfully!',
-            showLabel: true,
           );
         } else if (state is TradeFailure) {
           AppSnackbar.showError(state.message);
@@ -264,7 +268,7 @@ class _StockDetailScreenState extends State<StockDetailScreen>
                 const SizedBox(width: 8),
                 Expanded(
                   child: AppText(
-                    '${holding.holding.quantity} shares @ ${MoneyUtils.format(holding.holding.avgBuyPricePaisa)}',
+                    '${holding.holding.quantity} shares @ ${MoneyUtils.format(holding.holding.avgBuyPricePaisa.round())}',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),

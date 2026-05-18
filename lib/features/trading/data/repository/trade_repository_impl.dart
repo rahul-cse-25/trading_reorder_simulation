@@ -79,4 +79,32 @@ class TradeRepositoryImpl implements TradeRepository {
     );
     await storage.saveString(StorageKeys.holdings, jsonString);
   }
+
+  @override
+  Future<void> executeTradeTransaction({
+    required int newBalancePaisa,
+    required List<Holding> updatedHoldings,
+    required Trade newTrade,
+  }) async {
+    // 1. Fetch current historical trades
+    final history = await getTradeHistory();
+    // Insert newTrade at the top (newest first)
+    final newHistory = [newTrade, ...history];
+    // Memory safeguard: Cap history at 500 entries (Edge case S4)
+    final cappedHistory = newHistory.take(500).toList();
+
+    // 2. Commit all changes simultaneously. If any write fails, an exception is thrown,
+    // signaling transaction failure at the app level before any reactive update occurs.
+    await Future.wait([
+      storage.saveInt(StorageKeys.walletBalance, newBalancePaisa),
+      storage.saveString(
+        StorageKeys.holdings,
+        jsonEncode(updatedHoldings.map((h) => HoldingModel.fromEntity(h).toJson()).toList()),
+      ),
+      storage.saveString(
+        StorageKeys.tradeHistory,
+        jsonEncode(cappedHistory.map((t) => TradeModel.fromEntity(t).toJson()).toList()),
+      ),
+    ]);
+  }
 }

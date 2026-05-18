@@ -13,11 +13,13 @@ import '../watchlist/presentation/screens/watchlist_screen.dart';
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
+  static AppShellState? instance;
+
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<AppShell> createState() => AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
@@ -26,13 +28,32 @@ class _AppShellState extends State<AppShell> {
     const TransactionHistoryScreen(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    AppShell.instance = this;
+  }
+
+  @override
+  void dispose() {
+    if (AppShell.instance == this) {
+      AppShell.instance = null;
+    }
+    super.dispose();
+  }
+
+  void setIndex(int index) {
+    if (_currentIndex == index) return;
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   void _onTabTapped(int index) {
     if (_currentIndex == index) return;
 
     HapticFeedback.selectionClick();
-    setState(() {
-      _currentIndex = index;
-    });
+    setIndex(index);
 
     // Refresh portfolio when switching to it
     if (index == 1) {
