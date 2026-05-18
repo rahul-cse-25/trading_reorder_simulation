@@ -45,7 +45,7 @@ class _ReorderWatchlistScreenState extends State<ReorderWatchlistScreen> {
                 pinned: true,
                 leading: IconButton(
                   icon: const Icon(
-                    Icons.close_rounded,
+                    Icons.arrow_back_ios_new,
                     color: Colors.white70,
                     size: 22,
                   ),
@@ -352,16 +352,16 @@ class _WatchlistManagerPanelState extends State<_WatchlistManagerPanel> {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       decoration: BoxDecoration(
-        color: const Color(0xFF161616),
+        gradient: LinearGradient(
+          colors: [
+            Colors.blueAccent.withValues(alpha: 0.15),
+            Colors.purpleAccent.withValues(alpha: 0.02),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.15)),
       ),
       child: Column(
         children: [

@@ -19,28 +19,21 @@ class PortfolioSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isProfit = pnlPaisa >= 0;
-    final pnlColor = isProfit ? const Color(0xFF22C55E) : const Color(0xFFEF4444);
-    final pnlBgColor = isProfit
-        ? const Color(0xFF22C55E).withValues(alpha: 0.08)
-        : const Color(0xFFEF4444).withValues(alpha: 0.08);
+    final pnlColor = isProfit ? Colors.greenAccent : Colors.redAccent;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF161616),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: pnlColor.withValues(alpha: 0.15),
-          width: 1,
+        gradient: LinearGradient(
+          colors: [
+            pnlColor.withValues(alpha: 0.15),
+            pnlColor.withValues(alpha: 0.02),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: pnlColor.withValues(alpha: 0.06),
-            blurRadius: 24,
-            spreadRadius: -4,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: pnlColor.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +72,7 @@ class PortfolioSummary extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: pnlBgColor,
+                  color: pnlColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: pnlColor.withValues(alpha: 0.25)),
                 ),

@@ -25,6 +25,7 @@ class WatchlistScreen extends StatelessWidget {
     final symbols = sl<WatchlistRepository>().getAllAvailableSymbols();
 
     return Scaffold(
+      extendBody: true,
       body: BlocBuilder<WatchlistBloc, WatchlistState>(
         buildWhen: (previous, current) {
           // Performance Guard: Only rebuild scaffold structure if loading state changes
@@ -186,6 +187,9 @@ class WatchlistScreen extends StatelessWidget {
                     );
                   }, childCount: symbols.length),
                 ),
+              ),
+              const SliverToBoxAdapter(
+                child: SafeArea(top: false, child: SizedBox.shrink()),
               ),
             ],
           );

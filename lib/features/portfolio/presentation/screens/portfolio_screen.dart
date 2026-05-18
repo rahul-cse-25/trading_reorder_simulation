@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../shared/widgets/app_text.dart';
 import '../bloc/portfolio_bloc.dart';
 import '../bloc/portfolio_event.dart';
@@ -55,19 +56,12 @@ class PortfolioScreen extends StatelessWidget {
                       _buildSortSelector(context),
                       const SizedBox(width: 8),
                     ],
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(1),
-                      child: Container(
-                        height: 1,
-                        color: Colors.white.withValues(alpha: 0.04),
-                      ),
-                    ),
                   ),
 
                   // ── Portfolio Summary Card ──
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: PortfolioSummary(
                         investedPaisa: state.totalInvestedPaisa,
                         currentValuePaisa: state.totalCurrentValuePaisa,
@@ -122,7 +116,7 @@ class PortfolioScreen extends StatelessWidget {
                     ),
                   ),
                   const SliverToBoxAdapter(
-                    child: SizedBox(height: 100),
+                    child: SafeArea(top: false, child: SizedBox.shrink()),
                   ),
                 ],
               ),
@@ -145,10 +139,13 @@ class PortfolioScreen extends StatelessWidget {
         _buildSortChip(context, 'P&L', PortfolioSortType.pnl, currentSort),
         const SizedBox(width: 4),
         _buildSortChip(
-            context, 'Value', PortfolioSortType.currentValue, currentSort),
+          context,
+          'Value',
+          PortfolioSortType.currentValue,
+          currentSort,
+        ),
         const SizedBox(width: 4),
-        _buildSortChip(
-            context, 'A–Z', PortfolioSortType.symbol, currentSort),
+        _buildSortChip(context, 'A–Z', PortfolioSortType.symbol, currentSort),
       ],
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/widgets/app_text.dart';
@@ -12,7 +13,8 @@ class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<TransactionHistoryScreen> createState() =>
+      _TransactionHistoryScreenState();
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
@@ -57,7 +59,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SizedBox(
                       height: 200,
-                      child: Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.blueAccent,
+                        ),
+                      ),
                     );
                   }
 
@@ -67,7 +73,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   }
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -90,7 +96,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             return _buildTransactionCard(history[index]);
                           },
                         ),
-                        const SizedBox(height: 120),
+                        const SafeArea(top: false, child: SizedBox.shrink()),
                       ],
                     ),
                   );
@@ -106,7 +112,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   Widget _buildSummaryCard(List<Trade> history) {
     final buyCount = history.where((t) => t.type == TradeType.buy).length;
     final sellCount = history.where((t) => t.type == TradeType.sell).length;
-    
+
     int totalVolume = 0;
     int totalValuePaisa = 0;
     for (var trade in history) {
@@ -136,17 +142,36 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppText('Total Executed', fontSize: 12, color: Colors.white38, fontWeight: FontWeight.bold),
+                  const AppText(
+                    'Total Executed',
+                    fontSize: 12,
+                    color: Colors.white38,
+                    fontWeight: FontWeight.bold,
+                  ),
                   const SizedBox(height: 4),
-                  AppText('${history.length} Orders', fontSize: 22, fontWeight: FontWeight.bold),
+                  AppText(
+                    '${history.length} Orders',
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const AppText('Trade Value', fontSize: 12, color: Colors.white38, fontWeight: FontWeight.bold),
+                  const AppText(
+                    'Trade Value',
+                    fontSize: 12,
+                    color: Colors.white38,
+                    fontWeight: FontWeight.bold,
+                  ),
                   const SizedBox(height: 4),
-                  AppText(MoneyUtils.format(totalValuePaisa), fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                  AppText(
+                    MoneyUtils.format(totalValuePaisa),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
                 ],
               ),
             ],
@@ -160,7 +185,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             children: [
               _buildMiniSummaryStat('BUYS', '$buyCount', Colors.greenAccent),
               _buildMiniSummaryStat('SELLS', '$sellCount', Colors.redAccent),
-              _buildMiniSummaryStat('VOLUME', '$totalVolume Shs', Colors.white70),
+              _buildMiniSummaryStat(
+                'VOLUME',
+                '$totalVolume Shs',
+                Colors.white70,
+              ),
             ],
           ),
         ],
@@ -172,7 +201,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppText(label, fontSize: 10, color: Colors.white24, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+        AppText(
+          label,
+          fontSize: 10,
+          color: Colors.white24,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
         const SizedBox(height: 4),
         AppText(value, fontSize: 14, fontWeight: FontWeight.bold, color: color),
       ],
@@ -215,14 +250,23 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               children: [
                 Row(
                   children: [
-                    AppText(trade.symbol, fontSize: 16, fontWeight: FontWeight.bold),
+                    AppText(
+                      trade.symbol,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: typeColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: typeColor.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: typeColor.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: AppText(
                         isBuy ? 'BUY' : 'SELL',
@@ -234,11 +278,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                AppText(
-                  timestampString,
-                  fontSize: 11,
-                  color: Colors.white38,
-                ),
+                AppText(timestampString, fontSize: 11, color: Colors.white38),
               ],
             ),
           ),
@@ -272,27 +312,54 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history_rounded, size: 80, color: Colors.white.withValues(alpha: 0.1)),
+          Icon(
+            Icons.history_rounded,
+            size: 80,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
           const SizedBox(height: 24),
-          const AppText('No Orders Yet', fontSize: 20, fontWeight: FontWeight.bold),
+          const AppText(
+            'No Orders Yet',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
           const SizedBox(height: 8),
-          const AppText('Your trade transactions will appear here.', color: Colors.white38),
+          const AppText(
+            'Your trade transactions will appear here.',
+            color: Colors.white38,
+          ),
         ],
       ),
     );
   }
 
   String _formatDateTime(DateTime dt) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     final day = dt.day.toString().padLeft(2, '0');
     final month = months[dt.month - 1];
     final year = dt.year;
-    
+
     final hourInt = dt.hour;
     final period = hourInt >= 12 ? 'PM' : 'AM';
-    final hour = (hourInt % 12 == 0 ? 12 : hourInt % 12).toString().padLeft(2, '0');
+    final hour = (hourInt % 12 == 0 ? 12 : hourInt % 12).toString().padLeft(
+      2,
+      '0',
+    );
     final minute = dt.minute.toString().padLeft(2, '0');
-    
+
     return '$day $month $year • $hour:$minute $period';
   }
 }

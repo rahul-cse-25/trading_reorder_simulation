@@ -1,23 +1,23 @@
 import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/events/trading_orchestrator.dart';
 import '../../domain/repository/trade_repository.dart';
 
 /// [WalletCubit] is the single source of truth for the user's cash balance.
-/// 
-/// It listens to the [TradingOrchestrator] to update the balance 
+///
+/// It listens to the [TradingOrchestrator] to update the balance
 /// automatically whenever a trade occurs.
 class WalletCubit extends Cubit<int> {
   final TradeRepository repository;
   final TradingOrchestrator orchestrator;
   StreamSubscription? _orchestratorSubscription;
 
-  WalletCubit({
-    required this.repository,
-    required this.orchestrator,
-  }) : super(0) {
+  WalletCubit({required this.repository, required this.orchestrator})
+    : super(0) {
     _init();
-    
+
     // Listen for trade completion events to update balance reactively
     _orchestratorSubscription = orchestrator.events.listen((event) {
       if (event is TradeCompletedEvent) {

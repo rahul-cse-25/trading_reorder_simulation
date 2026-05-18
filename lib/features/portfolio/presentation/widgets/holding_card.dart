@@ -42,14 +42,12 @@ class HoldingCard extends StatelessWidget {
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF161616),
+          color: const Color(0xFF1E1E1E),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
@@ -131,14 +129,14 @@ class HoldingCard extends StatelessWidget {
             ),
 
             // ── Chevron ──
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 6),
+            //   child: Icon(
+            //     Icons.chevron_right_rounded,
+            //     size: 18,
+            //     color: Colors.white.withValues(alpha: 0.15),
+            //   ),
+            // ),
           ],
         ),
       ),
