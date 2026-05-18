@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/utils/money_utils.dart';
+import '../../../../core/utils/navigator_ex.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../watchlist/domain/entities/stock.dart';
 import '../../../watchlist/presentation/bloc/watchlist_bloc.dart';
@@ -31,11 +33,10 @@ class HoldingCard extends StatelessWidget {
             candles: const [],
           ),
         );
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => StockDetailScreen(stock: stock),
-          ),
+        context.push(
+          StockDetailScreen(stock: stock),
+          animation: AnimationType.slide,
+          direction: NavSlideDirection.rtl,
         );
       },
       behavior: HitTestBehavior.opaque,
@@ -47,61 +48,77 @@ class HoldingCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(display.holding.symbol, fontWeight: FontWeight.bold, fontSize: 16),
-                  AppText('${display.holding.quantity} Shares', color: Colors.white38, fontSize: 12),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  AppText(
-                    MoneyUtils.format(display.currentValuePaisa),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        isProfit ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                        color: color,
-                        size: 20,
-                      ),
-                      AppText(
-                        '${MoneyUtils.format(display.pnlPaisa)} (${display.pnlPercent.toStringAsFixed(2)}%)',
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(color: Colors.white10, height: 1),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildSmallMetric('Avg. Price', MoneyUtils.format(display.holding.avgBuyPricePaisa)),
-              _buildSmallMetric('LTP', AppPriceFormatter.format(display.currentPrice)),
-            ],
-          ),
-        ],
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      display.holding.symbol,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    AppText(
+                      '${display.holding.quantity} Shares',
+                      color: Colors.white38,
+                      fontSize: 12,
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    AppText(
+                      MoneyUtils.format(display.currentValuePaisa),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          isProfit
+                              ? Icons.arrow_drop_up
+                              : Icons.arrow_drop_down,
+                          color: color,
+                          size: 20,
+                        ),
+                        AppText(
+                          '${MoneyUtils.format(display.pnlPaisa)} (${display.pnlPercent.toStringAsFixed(2)}%)',
+                          color: color,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(color: Colors.white10, height: 1),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSmallMetric(
+                  'Avg. Price',
+                  MoneyUtils.format(display.holding.avgBuyPricePaisa),
+                ),
+                _buildSmallMetric(
+                  'LTP',
+                  AppPriceFormatter.format(display.currentPrice),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildSmallMetric(String label, String value) {
     return Column(

@@ -51,7 +51,7 @@ class _SlideToConfirmState extends State<SlideToConfirm> with SingleTickerProvid
     super.dispose();
   }
 
-  void _onPanUpdate(DragUpdateDetails details, double maxWidth) {
+  void _onHorizontalDragUpdate(DragUpdateDetails details, double maxWidth) {
     if (!widget.isEnabled || _isConfirmed) return;
 
     setState(() {
@@ -66,7 +66,7 @@ class _SlideToConfirmState extends State<SlideToConfirm> with SingleTickerProvid
     }
   }
 
-  void _onPanEnd(DragEndDetails details, double maxWidth) {
+  void _onHorizontalDragEnd(DragEndDetails details, double maxWidth) {
     if (!widget.isEnabled || _isConfirmed) return;
 
     if (_position > maxWidth - 100) {
@@ -118,8 +118,9 @@ class _SlideToConfirmState extends State<SlideToConfirm> with SingleTickerProvid
                   top: 4,
                   bottom: 4,
                   child: GestureDetector(
-                    onPanUpdate: (details) => _onPanUpdate(details, maxWidth),
-                    onPanEnd: (details) => _onPanEnd(details, maxWidth),
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragUpdate: (details) => _onHorizontalDragUpdate(details, maxWidth),
+                    onHorizontalDragEnd: (details) => _onHorizontalDragEnd(details, maxWidth),
                     child: Container(
                       width: 56,
                       decoration: BoxDecoration(

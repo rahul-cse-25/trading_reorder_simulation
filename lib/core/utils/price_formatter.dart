@@ -8,4 +8,9 @@ class AppPriceFormatter {
   );
 
   static String format(double price) => formatter.format(price);
+
+  static String formatCompact(double value) {
+    final format = NumberFormat.compact(locale: 'en_IN');
+    return '₹${format.format(value)}';
+  }
 }

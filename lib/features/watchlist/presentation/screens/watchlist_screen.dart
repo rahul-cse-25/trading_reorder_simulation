@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/simulation_service.dart';
 import '../../../../core/utils/money_utils.dart';
+import '../../../../core/utils/navigator_ex.dart';
+import '../../../../shared/animated_widgets/shake_animator.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../trading/presentation/bloc/wallet_cubit.dart';
 import '../../domain/repository/watchlist_repository.dart';
@@ -74,33 +76,50 @@ class WatchlistScreen extends StatelessWidget {
                     ),
                     BlocBuilder<WalletCubit, int>(
                       builder: (context, balance) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                        return PremiumShake.card(
+                          trigger: balance,
+                          idleBorder: BorderSide.none,
+                          padding: const EdgeInsets.all(1),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(24),
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.blueAccent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.blueAccent.withValues(alpha: 0.3),
+                          enableHaptic: true,
+                          premiumHoldDuration: const Duration(
+                            milliseconds: 1000,
+                          ),
+                          glowBlurRadius: 10,
+                          glowSpreadRadius: 0,
+                          hapticType: PremiumHapticType.light,
+                          child: Container(
+                            height: 38,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.account_balance_wallet_outlined,
-                                size: 14,
-                                color: Colors.blueAccent,
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(24),
                               ),
-                              const SizedBox(width: 6),
-                              AppText(
-                                MoneyUtils.format(balance),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blueAccent,
-                              ),
-                            ],
+                              color: Color.fromRGBO(0, 0, 0, 0.05),
+                            ),
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet_outlined,
+                                  size: 14,
+                                  // color: activeColor,
+                                ),
+                                const SizedBox(width: 6),
+                                AppText(
+                                  MoneyUtils.formatCompact(balance),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  // color: activeColor,
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -115,12 +134,10 @@ class WatchlistScreen extends StatelessWidget {
                     ),
                     tooltip: 'Manage Watchlists',
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ReorderWatchlistScreen(),
-                          fullscreenDialog: true,
-                        ),
+                      context.push(
+                        const ReorderWatchlistScreen(),
+                        animation: AnimationType.slide,
+                        direction: NavSlideDirection.rtl,
                       );
                     },
                   ),
@@ -164,12 +181,10 @@ class WatchlistScreen extends StatelessWidget {
                         final stock = watchlistState.stocks.firstWhere(
                           (s) => s.symbol == symbol,
                         );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                StockDetailScreen(stock: stock),
-                          ),
+                        context.push(
+                          StockDetailScreen(stock: stock),
+                          animation: AnimationType.slide,
+                          direction: NavSlideDirection.rtl,
                         );
                       },
                     );

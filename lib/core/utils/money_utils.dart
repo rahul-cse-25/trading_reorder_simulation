@@ -18,6 +18,9 @@ class MoneyUtils {
   /// Formats paisa directly into a localized currency string
   static String format(int paisa) => AppPriceFormatter.format(toRupees(paisa));
 
+  /// Formats paisa directly into a localized compact currency string (K, M, B)
+  static String formatCompact(int paisa) => AppPriceFormatter.formatCompact(toRupees(paisa));
+
   /// Calculates percentage change using integer math to maintain precision.
   /// Result is in basis points (1/100th of a percent).
   /// To get 2.5%, this returns 250.

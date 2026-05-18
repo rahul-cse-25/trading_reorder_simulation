@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/navigator_ex.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/custom_watchlist.dart';
 import '../bloc/watchlist_bloc.dart';
@@ -720,11 +721,10 @@ class _StockReorderableList extends StatelessWidget {
                   symbol: symbol,
                   verticalPadding: 8,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StockDetailScreen(stock: stock),
-                      ),
+                    context.push(
+                      StockDetailScreen(stock: stock),
+                      animation: AnimationType.slide,
+                      direction: NavSlideDirection.rtl,
                     );
                   },
                 );

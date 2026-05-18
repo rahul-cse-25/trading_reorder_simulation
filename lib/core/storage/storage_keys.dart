@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// [StorageKeys] centralizes all persistence keys to prevent typo-based bugs
 /// and provide a single source of truth for local data.
 abstract class StorageKeys {
@@ -18,4 +20,22 @@ abstract class StorageKeys {
 
   /// String: Schema version for migrations
   static const String storageVersion = 'storage_version';
+}
+
+/// [AppKeys] provides a singleton instance of [GlobalKey<NavigatorState>]
+/// to prevent multiple instances from being created.
+class AppKeys {
+  static final AppKeys _instance = AppKeys._internal();
+
+  AppKeys._internal();
+
+  factory AppKeys() => _instance;
+
+  /// The singleton instance of [AppKeys].
+  static final AppKeys instance = _instance;
+
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 }

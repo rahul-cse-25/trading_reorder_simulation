@@ -12,6 +12,8 @@ import 'features/watchlist/presentation/bloc/watchlist_bloc.dart';
 import 'features/watchlist/presentation/bloc/watchlist_event.dart';
 import 'features/watchlist/presentation/bloc/watchlist_manager_cubit.dart';
 
+import 'core/storage/storage_keys.dart';
+
 class TradingApp extends StatelessWidget {
   const TradingApp({super.key});
 
@@ -35,6 +37,8 @@ class TradingApp extends StatelessWidget {
       child: MaterialApp(
         title: 'MarketPulse',
         debugShowCheckedModeBanner: false,
+        navigatorKey: AppKeys.instance.navigatorKey,
+        scaffoldMessengerKey: AppKeys.instance.scaffoldMessengerKey,
         theme: ThemeData(
           brightness: Brightness.dark,
           primaryColor: Colors.blueAccent,

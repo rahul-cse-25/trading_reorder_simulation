@@ -18,6 +18,9 @@ import '../../../trading/presentation/bloc/trade_state.dart';
 import '../../../trading/presentation/bloc/wallet_cubit.dart';
 import '../../../portfolio/presentation/bloc/portfolio_bloc.dart';
 import '../../../portfolio/presentation/bloc/portfolio_state.dart';
+import '../../../../core/services/floating_notification/manager.dart';
+import '../../../../core/services/snackbar/manager.dart';
+import '../../../../shared/animated_widgets/animated_value_change.dart';
 
 class StockDetailScreen extends StatefulWidget {
   final Stock stock;
@@ -48,13 +51,23 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
       listener: (context, state) {
         if (state is TradeSuccess) {
           _onTradeExecuted();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: AppText('Order Executed Successfully!', color: Colors.white)),
+          
+          // Beautiful floating notification overlay
+          AppFloating.show(
+            child: _AppFloatingTradeNotification(trade: state.trade),
+            options: const AppFloatingOptions(
+              enableHapticOnAppear: true,
+              showDuration: Duration(seconds: 4),
+            ),
+          );
+
+          // Success snackbar
+          AppSnackbar.showSuccess(
+            'Order Executed Successfully!',
+            showLabel: true,
           );
         } else if (state is TradeFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: AppText(state.message, color: Colors.white), backgroundColor: Colors.redAccent),
-          );
+          AppSnackbar.showError(state.message);
         }
       },
       child: BlocSelector<WatchlistBloc, WatchlistState, Stock>(
@@ -266,7 +279,27 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppText('QUANTITY', fontSize: 11, color: Colors.white38, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const AppText('QUANTITY', fontSize: 11, color: Colors.white38, fontWeight: FontWeight.bold),
+                          AnimatedValue(
+                            value: (int.tryParse(_quantityController.text) ?? 0).toDouble(),
+                            increaseColor: Colors.greenAccent,
+                            decreaseColor: Colors.redAccent,
+                            idleColor: Colors.white54,
+                            builder: (context, val, color) {
+                              return AppText(
+                                '${val.toInt()} Shares',
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: color ?? Colors.white54,
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 16), // space before edge
+                        ],
+                      ),
                       TextField(
                         controller: _quantityController,
                         keyboardType: TextInputType.number,
@@ -285,7 +318,20 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
                       children: [
                         const AppText('WALLET BALANCE', fontSize: 11, color: Colors.white38, fontWeight: FontWeight.bold),
                         const SizedBox(height: 4),
-                        AppText(MoneyUtils.format(balance), fontSize: 16, fontWeight: FontWeight.bold),
+                        AnimatedValue(
+                          value: balance.toDouble(),
+                          increaseColor: Colors.greenAccent,
+                          decreaseColor: Colors.redAccent,
+                          idleColor: Colors.white,
+                          builder: (context, val, color) {
+                            return AppText(
+                              MoneyUtils.format(val.toInt()),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: color ?? Colors.white,
+                            );
+                          },
+                        ),
                       ],
                     );
                   },
@@ -349,7 +395,20 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             AppText(isBuy ? 'Estimated Total' : 'Estimated Value', color: Colors.white54),
-            AppText(MoneyUtils.format(totalCostPaisa), fontWeight: FontWeight.bold, fontSize: 18),
+            AnimatedValue(
+              value: totalCostPaisa.toDouble(),
+              increaseColor: Colors.greenAccent,
+              decreaseColor: Colors.redAccent,
+              idleColor: Colors.white,
+              builder: (context, val, color) {
+                return AppText(
+                  MoneyUtils.format(val.toInt()),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: color ?? Colors.white,
+                );
+              },
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -417,6 +476,96 @@ class _StockDetailScreenState extends State<StockDetailScreen> {
         children: [
           const AppText('Insufficient Funds', fontWeight: FontWeight.bold),
           AppText('Tap to add ${MoneyUtils.format(10000000)}', fontSize: 12),
+        ],
+      ),
+    );
+  }
+}
+
+class _AppFloatingTradeNotification extends StatelessWidget {
+  final Trade trade;
+
+  const _AppFloatingTradeNotification({required this.trade});
+
+  @override
+  Widget build(BuildContext context) {
+    final isBuy = trade.type == TradeType.buy;
+    final accentColor = isBuy ? Colors.greenAccent : Colors.redAccent;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.15),
+            blurRadius: 16,
+            spreadRadius: -2,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Direction indicator icon
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isBuy ? Icons.arrow_outward_rounded : Icons.call_received_rounded,
+              color: accentColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Trade details
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    AppText(
+                      isBuy ? 'BUY EXECUTED' : 'SELL EXECUTED',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                      letterSpacing: 1.0,
+                    ),
+                    const Spacer(),
+                    AppText(
+                      MoneyUtils.format(trade.totalCostPaisa),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    AppText(
+                      '${trade.quantity} Shares of ${trade.symbol}',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    const Spacer(),
+                    AppText(
+                      '@ ${MoneyUtils.format(trade.pricePaisa)}',
+                      fontSize: 11,
+                      color: Colors.white54,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
